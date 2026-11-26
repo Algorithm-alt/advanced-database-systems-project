@@ -1248,6 +1248,62 @@ td.number, th.number {
     position: relative;
     flex-shrink: 0;
 }
+.quick-actions-menu {
+    position: relative;
+    flex-shrink: 0;
+}
+.quick-actions-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 11px;
+    border: 1px solid var(--line-dark);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--ink-soft);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+.quick-actions-toggle:hover,
+.quick-actions-toggle[aria-expanded="true"] {
+    border-color: var(--line-dark);
+    background: var(--surface-2);
+    color: var(--ink);
+}
+.quick-actions-toggle:focus-visible {
+    outline: 3px solid var(--brand-glow);
+    outline-offset: 2px;
+}
+.quick-actions-toggle svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    color: var(--brand);
+}
+.account-panel.quick-actions-panel {
+    width: min(300px, calc(100vw - 24px));
+    max-height: min(70vh, 480px);
+    overflow-y: auto;
+}
+.quick-actions-heading {
+    display: grid;
+    gap: 3px;
+    padding: 7px 8px 12px;
+    border-bottom: 1px solid var(--line);
+}
+.quick-actions-heading strong {
+    color: var(--ink);
+    font-size: 13px;
+}
+.quick-actions-heading small {
+    color: var(--muted);
+    font-size: 11px;
+}
 .account-toggle {
     display: flex;
     align-items: center;
@@ -1876,6 +1932,8 @@ td.number, th.number {
     .account-toggle-copy { display: none; }
     .account-toggle { width: 40px; height: 40px; justify-content: center; padding: 3px; }
     .account-chevron { display: none; }
+    .quick-actions-label { display: none; }
+    .quick-actions-toggle { width: 40px; height: 40px; padding: 0; }
 }
 
 @media (max-width: 640px) {
@@ -1901,6 +1959,7 @@ td.number, th.number {
 
     .account-toggle { width: 36px; height: 36px; }
     .account-avatar { width: 29px; height: 29px; }
+    .quick-actions-toggle { width: 36px; height: 36px; }
 
     .dashboard-hero {
         min-height: 0;

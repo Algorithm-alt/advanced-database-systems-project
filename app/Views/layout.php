@@ -92,6 +92,84 @@ if ($authUser !== null) {
                 <span class="theme-label" data-theme-label>Dark</span>
             </button>
             <?php if ($authUser !== null): ?>
+                <div class="quick-actions-menu" data-quick-actions-menu>
+                    <button type="button" class="quick-actions-toggle" data-quick-actions-toggle
+                            aria-controls="quick-actions-panel" aria-expanded="false"
+                            aria-label="Open quick actions" data-quick-actions-label="quick actions"
+                            title="Quick actions">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <path d="M13 2 4.5 13h6.2L10 22l9.5-11h-6.2L13 2Z"/>
+                        </svg>
+                        <span class="quick-actions-label">Quick actions</span>
+                    </button>
+                    <section class="account-panel quick-actions-panel" id="quick-actions-panel"
+                             data-quick-actions-panel role="region" aria-label="Quick actions" hidden>
+                        <div class="quick-actions-heading">
+                            <strong>Quick actions</strong>
+                            <small>Jump straight into common tasks</small>
+                        </div>
+                        <nav class="account-panel-links" aria-label="Quick actions">
+                            <?php if (Auth::hasRole('Administrator', 'Manager', 'Employee')): ?>
+                                <a href="<?= View::e(Request::url('pos')) ?>">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M3 3h2l2.4 11.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 7H6"/>
+                                        <circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
+                                    </svg>
+                                    <span>Start a sale</span>
+                                </a>
+                                <a href="<?= View::e(Request::url('inventory')) ?>">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="m3 7 9-4 9 4v10l-9 4-9-4V7Z"/><path d="m3 7 9 4 9-4M12 11v10"/>
+                                    </svg>
+                                    <span>Open inventory</span>
+                                </a>
+                                <a href="<?= View::e(Request::url('admin/records&section=customers')) ?>">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <circle cx="9" cy="8" r="4"/><path d="M3 21v-2a6 6 0 0 1 12 0v2"/>
+                                        <path d="M16 4.5a4 4 0 0 1 0 7.5M21 21v-2a6 6 0 0 0-4-5.7"/>
+                                    </svg>
+                                    <span>Manage customers</span>
+                                </a>
+                                <?php if (Auth::hasRole('Administrator', 'Manager')): ?>
+                                    <a href="<?= View::e(Request::url('admin/records&section=suppliers')) ?>">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M3 21h18M5 21V7l7-4 7 4v14M9 10h1m4 0h1m-6 4h1m4 0h1"/>
+                                        </svg>
+                                        <span>Manage suppliers</span>
+                                    </a>
+                                    <a href="<?= View::e(Request::url('reports')) ?>">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/>
+                                        </svg>
+                                        <span>Sales reports</span>
+                                    </a>
+                                <?php endif; ?>
+                                <?php if (Auth::hasRole('Administrator')): ?>
+                                    <a href="<?= View::e(Request::url('admin/users')) ?>">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <circle cx="9" cy="8" r="4"/><path d="M3 21v-2a6 6 0 0 1 12 0v2"/>
+                                            <path d="M16 4.5a4 4 0 0 1 0 7.5M21 21v-2a6 6 0 0 0-4-5.7"/>
+                                        </svg>
+                                        <span>Manage users</span>
+                                    </a>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <a href="<?= View::e(Request::url('catalog')) ?>">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M20 13 13 20 3 10V3h7l10 10Z"/><circle cx="7.5" cy="7.5" r=".5"/>
+                                    </svg>
+                                    <span>Browse products</span>
+                                </a>
+                                <a href="<?= View::e(Request::url('my-sales')) ?>">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M4 3h16v18l-3-2-3 2-4-2-3 2-3-2V3Z"/><path d="M8 8h8M8 12h8M8 16h4"/>
+                                    </svg>
+                                    <span>View purchases</span>
+                                </a>
+                            <?php endif; ?>
+                        </nav>
+                    </section>
+                </div>
                 <div class="account-menu" data-account-menu>
                     <button type="button" class="account-toggle" data-account-toggle
                             aria-controls="account-menu-panel" aria-expanded="false"

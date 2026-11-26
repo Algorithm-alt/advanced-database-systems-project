@@ -36,38 +36,41 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    const accountMenu = document.querySelector('[data-account-menu]');
-    if (accountMenu) {
-        const accountToggle = accountMenu.querySelector('[data-account-toggle]');
-        const accountPanel = accountMenu.querySelector('[data-account-panel]');
+    function setupHeaderPopover(menuSelector, toggleSelector, panelSelector, labelAttribute) {
+        const menu = document.querySelector(menuSelector);
+        if (!menu) return;
 
-        function setAccountMenuOpen(open, restoreFocus) {
-            if (!accountToggle || !accountPanel) return;
-            accountPanel.hidden = !open;
-            accountToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-            const label = accountToggle.getAttribute('data-account-label') || 'account menu';
-            accountToggle.setAttribute('aria-label', (open ? 'Close ' : 'Open ') + label);
-            if (restoreFocus) accountToggle.focus();
+        const toggle = menu.querySelector(toggleSelector);
+        const panel = menu.querySelector(panelSelector);
+        if (!toggle || !panel) return;
+
+        function setOpen(open, restoreFocus) {
+            panel.hidden = !open;
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            const label = toggle.getAttribute(labelAttribute) || 'menu';
+            toggle.setAttribute('aria-label', (open ? 'Close ' : 'Open ') + label);
+            if (restoreFocus) toggle.focus();
         }
 
-        if (accountToggle && accountPanel) {
-            accountToggle.addEventListener('click', function () {
-                setAccountMenuOpen(accountPanel.hidden, false);
-            });
+        toggle.addEventListener('click', function () {
+            setOpen(panel.hidden, false);
+        });
 
-            accountMenu.addEventListener('focusout', function (event) {
-                if (!accountMenu.contains(event.relatedTarget)) setAccountMenuOpen(false, false);
-            });
+        menu.addEventListener('focusout', function (event) {
+            if (!menu.contains(event.relatedTarget)) setOpen(false, false);
+        });
 
-            document.addEventListener('click', function (event) {
-                if (!accountMenu.contains(event.target)) setAccountMenuOpen(false, false);
-            });
+        document.addEventListener('click', function (event) {
+            if (!menu.contains(event.target)) setOpen(false, false);
+        });
 
-            document.addEventListener('keydown', function (event) {
-                if (event.key === 'Escape' && !accountPanel.hidden) setAccountMenuOpen(false, true);
-            });
-        }
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && !panel.hidden) setOpen(false, true);
+        });
     }
+
+    setupHeaderPopover('[data-account-menu]', '[data-account-toggle]', '[data-account-panel]', 'data-account-label');
+    setupHeaderPopover('[data-quick-actions-menu]', '[data-quick-actions-toggle]', '[data-quick-actions-panel]', 'data-quick-actions-label');
 
     const sidebarToggle   = document.querySelector('[data-sidebar-toggle]');
     const sidebarBackdrop = document.querySelector('[data-sidebar-backdrop]');
