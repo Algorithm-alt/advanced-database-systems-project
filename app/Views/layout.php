@@ -3,18 +3,9 @@ use App\Core\Auth;
 use App\Core\Request;
 use App\Core\Session;
 use App\Core\View;
-use App\Models\BusinessData;
 
 $authUser = Auth::user();
 $currentRoute = Request::route();
-$sidebarCounts = $authUser !== null ? BusinessData::sidebarCounts() : [];
-$navBadge = static function (string $key) use ($sidebarCounts): ?string {
-    $count = (int)($sidebarCounts[$key] ?? 0);
-    if ($count <= 0) {
-        return null;
-    }
-    return $count > 99 ? '99+' : (string)$count;
-};
 ?>
 <!doctype html>
 <html lang="en">
@@ -156,9 +147,6 @@ $navBadge = static function (string $key) use ($sidebarCounts): ?string {
                                 </svg>
                             </span>
                             <span>Inventory</span>
-                            <?php if (($badge = $navBadge('LowStockCount')) !== null): ?>
-                                <span class="nav-count nav-count-alert" aria-label="<?= View::e($badge) ?> low-stock items"><?= View::e($badge) ?></span>
-                            <?php endif; ?>
                         </a>
                         <a href="<?= View::e(Request::url('pos')) ?>" aria-label="Point of Sale" title="Point of Sale"
                            <?= str_starts_with($currentRoute, 'pos') ? 'aria-current="page"' : '' ?>>
@@ -170,9 +158,6 @@ $navBadge = static function (string $key) use ($sidebarCounts): ?string {
                                 </svg>
                             </span>
                             <span>Point of Sale</span>
-                            <?php if (($badge = $navBadge('SalesTodayCount')) !== null): ?>
-                                <span class="nav-count" aria-label="<?= View::e($badge) ?> sales today"><?= View::e($badge) ?></span>
-                            <?php endif; ?>
                         </a>
                     <?php else: ?>
                         <a href="<?= View::e(Request::url('catalog')) ?>" aria-label="Product Catalog" title="Product Catalog"
@@ -194,9 +179,6 @@ $navBadge = static function (string $key) use ($sidebarCounts): ?string {
                                 </svg>
                             </span>
                             <span>My Purchases</span>
-                            <?php if (($badge = $navBadge('PurchaseCount')) !== null): ?>
-                                <span class="nav-count" aria-label="<?= View::e($badge) ?> purchases"><?= View::e($badge) ?></span>
-                            <?php endif; ?>
                         </a>
                     <?php endif; ?>
 
@@ -210,9 +192,6 @@ $navBadge = static function (string $key) use ($sidebarCounts): ?string {
                                 </svg>
                             </span>
                             <span>Returns</span>
-                            <?php if (($badge = $navBadge('PendingReturnCount')) !== null): ?>
-                                <span class="nav-count nav-count-alert" aria-label="<?= View::e($badge) ?> pending returns"><?= View::e($badge) ?></span>
-                            <?php endif; ?>
                         </a>
                         <a href="<?= View::e(Request::url('reports')) ?>" aria-label="Sales Reports" title="Sales Reports"
                            <?= $currentRoute === 'reports' ? 'aria-current="page"' : '' ?>>

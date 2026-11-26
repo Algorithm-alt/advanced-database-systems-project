@@ -373,6 +373,21 @@ code {
     font-size: clamp(27px, 3.2vw, 38px);
     letter-spacing: -.04em;
 }
+.dashboard-hero-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    color: rgba(255,255,255,.82);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .01em;
+}
+.dashboard-hero-date svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+}
 .dashboard-hero-copy > p:not(.eyebrow) {
     max-width: 54ch;
     margin-bottom: 22px;
@@ -1357,24 +1372,6 @@ td.number, th.number {
     height: 18px;
 }
 
-.nav-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 22px;
-    height: 20px;
-    margin-left: auto;
-    padding: 0 6px;
-    border-radius: 999px;
-    background: var(--brand-mid);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 800;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-}
-.nav-count-alert { background: var(--danger); }
-
 .notification-center {
     position: relative;
 }
@@ -1602,7 +1599,7 @@ td.number, th.number {
     }
 
     body.sidebar-collapsed .sidebar-heading,
-    body.sidebar-collapsed .sidebar-nav a > span:not(.nav-ico):not(.nav-count),
+    body.sidebar-collapsed .sidebar-nav a > span:not(.nav-ico),
     body.sidebar-collapsed .sidebar-user,
     body.sidebar-collapsed .sidebar-signout > span {
         display: none;
@@ -1618,17 +1615,6 @@ td.number, th.number {
         gap: 0;
         padding-inline: 0;
         border-left-color: transparent;
-    }
-
-    body.sidebar-collapsed .sidebar-nav .nav-count {
-        position: absolute;
-        top: 2px;
-        right: 1px;
-        min-width: 18px;
-        height: 17px;
-        margin: 0;
-        padding-inline: 4px;
-        font-size: 9px;
     }
 
     body.sidebar-collapsed .sidebar-footer {
