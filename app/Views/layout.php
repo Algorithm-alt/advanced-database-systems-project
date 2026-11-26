@@ -1,0 +1,252 @@
+<?php
+use App\Core\Auth;
+use App\Core\Request;
+use App\Core\Session;
+use App\Core\View;
+
+$authUser = Auth::user();
+$currentRoute = Request::route();
+?>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Algorithm Hardware Plug – Retail Management System">
+    <title><?= View::e($title ?? 'Algorithm Hardware Plug') ?></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="<?= View::e(Request::asset('css/app.css')) ?>">
+</head>
+<body class="<?= $authUser !== null ? 'has-sidebar' : '' ?>">
+<header class="site-header">
+    <div class="header-inner <?= $authUser !== null ? 'header-fluid' : 'shell' ?>">
+        <div class="header-left">
+            <?php if ($authUser !== null): ?>
+                <button type="button" class="icon-btn sidebar-toggle" data-sidebar-toggle
+                        data-tooltip="Open navigation menu"
+                        aria-label="Toggle navigation menu" aria-expanded="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
+                        <path d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            <?php endif; ?>
+            <a class="brand" href="<?= View::e(Request::url($authUser !== null ? 'dashboard' : 'login')) ?>"
+               title="Go to <?= $authUser !== null ? 'dashboard' : 'sign in' ?>"
+               aria-label="Algorithm Hardware Plug">
+                <span class="brand-mark">AHP</span>
+                <span class="brand-text">
+                    <strong>Algorithm Hardware Plug</strong>
+                    <small>Retail Management System</small>
+                </span>
+            </a>
+        </div>
+
+        <div class="header-actions">
+            <button type="button" class="btn btn-ghost btn-sm theme-toggle" data-theme-toggle
+                    data-tooltip="Switch to dark mode" title="Switch to dark mode" aria-label="Switch to dark mode">
+                <span class="theme-icon" data-theme-icon aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                        <path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/>
+                    </svg>
+                </span>
+                <span class="theme-label" data-theme-label>Dark</span>
+            </button>
+            <?php if ($authUser !== null): ?>
+                <span class="role-pill" title="Active role: <?= View::e($authUser['role']) ?>"><?= View::e($authUser['role']) ?></span>
+                <a class="btn btn-ghost btn-sm btn-signout" href="<?= View::e(Request::url('logout')) ?>"
+                   data-tooltip="End your current session" title="End your current session">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span>Sign out</span>
+                </a>
+            <?php endif; ?>
+        </div>
+    </div>
+</header>
+
+<?php if ($authUser !== null): ?>
+    <div class="sidebar-backdrop" data-sidebar-backdrop></div>
+    <div class="app-shell">
+        <aside class="sidebar" id="app-sidebar" aria-label="Main navigation">
+            <div class="sidebar-section">
+                <p class="sidebar-heading">Workspace</p>
+                <nav class="sidebar-nav">
+                    <a href="<?= View::e(Request::url('dashboard')) ?>"
+                       <?= $currentRoute === 'dashboard' ? 'aria-current="page"' : '' ?>>
+                        <span class="nav-ico" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                <rect x="3" y="3" width="8" height="8" rx="1"/>
+                                <rect x="13" y="3" width="8" height="8" rx="1"/>
+                                <rect x="3" y="13" width="8" height="8" rx="1"/>
+                                <rect x="13" y="13" width="8" height="8" rx="1"/>
+                            </svg>
+                        </span>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <?php if (Auth::hasRole('Administrator', 'Manager', 'Employee')): ?>
+                        <a href="<?= View::e(Request::url('inventory')) ?>"
+                           <?= str_starts_with($currentRoute, 'inventory') ? 'aria-current="page"' : '' ?>>
+                            <span class="nav-ico" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                    <path d="m3 7 9-4 9 4v10l-9 4-9-4V7Z"/>
+                                    <path d="m3 7 9 4 9-4M12 11v10"/>
+                                </svg>
+                            </span>
+                            <span>Inventory</span>
+                        </a>
+                        <a href="<?= View::e(Request::url('pos')) ?>"
+                           <?= str_starts_with($currentRoute, 'pos') ? 'aria-current="page"' : '' ?>>
+                            <span class="nav-ico" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                    <path d="M3 3h2l2.4 11.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 7H6"/>
+                                    <circle cx="10" cy="20" r="1"/>
+                                    <circle cx="18" cy="20" r="1"/>
+                                </svg>
+                            </span>
+                            <span>Point of Sale</span>
+                        </a>
+                    <?php else: ?>
+                        <a href="<?= View::e(Request::url('catalog')) ?>"
+                           <?= $currentRoute === 'catalog' ? 'aria-current="page"' : '' ?>>
+                            <span class="nav-ico" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                    <path d="M20 13 13 20 3 10V3h7l10 10Z"/>
+                                    <circle cx="7.5" cy="7.5" r=".5"/>
+                                </svg>
+                            </span>
+                            <span>Product Catalog</span>
+                        </a>
+                        <a href="<?= View::e(Request::url('my-sales')) ?>"
+                           <?= $currentRoute === 'my-sales' ? 'aria-current="page"' : '' ?>>
+                            <span class="nav-ico" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                    <path d="M4 3h16v18l-3-2-3 2-4-2-3 2-3-2V3Z"/>
+                                    <path d="M8 8h8M8 12h8M8 16h4"/>
+                                </svg>
+                            </span>
+                            <span>My Purchases</span>
+                        </a>
+                    <?php endif; ?>
+
+                    <?php if (Auth::hasRole('Administrator', 'Manager')): ?>
+                        <a href="<?= View::e(Request::url('returns')) ?>"
+                           <?= str_starts_with($currentRoute, 'returns') ? 'aria-current="page"' : '' ?>>
+                            <span class="nav-ico" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                    <path d="M9 14 4 9l5-5"/>
+                                    <path d="M4 9h10a6 6 0 0 1 0 12h-2"/>
+                                </svg>
+                            </span>
+                            <span>Returns</span>
+                        </a>
+                        <a href="<?= View::e(Request::url('reports')) ?>"
+                           <?= $currentRoute === 'reports' ? 'aria-current="page"' : '' ?>>
+                            <span class="nav-ico" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                    <path d="M3 3v18h18"/>
+                                    <path d="M18 17V9M13 17V5M8 17v-3"/>
+                                </svg>
+                            </span>
+                            <span>Sales Reports</span>
+                        </a>
+                    <?php endif; ?>
+
+                    <?php if (Auth::hasRole('Administrator')): ?>
+                        <a href="<?= View::e(Request::url('admin/users')) ?>"
+                           <?= str_starts_with($currentRoute, 'admin') ? 'aria-current="page"' : '' ?>>
+                            <span class="nav-ico" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                    <circle cx="9" cy="8" r="4"/>
+                                    <path d="M3 21v-2a6 6 0 0 1 12 0v2"/>
+                                    <path d="M16 4.5a4 4 0 0 1 0 7.5M21 21v-2a6 6 0 0 0-4-5.7"/>
+                                </svg>
+                            </span>
+                            <span>Users &amp; Roles</span>
+                        </a>
+                        <a href="<?= View::e(Request::url('reports/audit')) ?>"
+                           <?= $currentRoute === 'reports/audit' ? 'aria-current="page"' : '' ?>>
+                            <span class="nav-ico" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                    <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/>
+                                    <path d="m9 12 2 2 4-4"/>
+                                </svg>
+                            </span>
+                            <span>Audit Trail</span>
+                        </a>
+                    <?php endif; ?>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <strong><?= View::e($authUser['full_name']) ?></strong>
+                    <small><?= View::e($authUser['username']) ?> &middot; <?= View::e($authUser['role']) ?></small>
+                </div>
+                <a class="btn btn-ghost btn-sm btn-signout sidebar-signout" href="<?= View::e(Request::url('logout')) ?>">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span>Sign out</span>
+                </a>
+            </div>
+        </aside>
+
+        <div class="app-main">
+            <main class="page page-with-sidebar">
+                <?php $flashes = Session::consumeFlash(); ?>
+                <?php if ($flashes !== []): ?>
+                    <div class="notice-stack" role="alert" aria-live="polite">
+                        <?php foreach ($flashes as $type => $messages): ?>
+                            <?php foreach ((array)$messages as $message): ?>
+                                <div class="notice notice-<?= View::e($type) ?>"><?= View::e($message) ?></div>
+                            <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?= $content ?>
+            </main>
+
+            <footer class="site-footer footer-fluid">
+                <span>&copy; <?= date('Y') ?> Algorithm Hardware Plug. All rights reserved.</span>
+                <span>Secured retail operations platform</span>
+            </footer>
+        </div>
+    </div>
+<?php else: ?>
+    <main class="shell page">
+        <?php $flashes = Session::consumeFlash(); ?>
+        <?php if ($flashes !== []): ?>
+            <div class="notice-stack" role="alert" aria-live="polite">
+                <?php foreach ($flashes as $type => $messages): ?>
+                    <?php foreach ((array)$messages as $message): ?>
+                        <div class="notice notice-<?= View::e($type) ?>"><?= View::e($message) ?></div>
+                    <?php endforeach; ?>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
+        <?= $content ?>
+    </main>
+
+    <footer class="site-footer shell">
+        <span>&copy; <?= date('Y') ?> Algorithm Hardware Plug. All rights reserved.</span>
+        <span>Secured retail operations platform</span>
+    </footer>
+<?php endif; ?>
+
+<?php if (isset($approval) && is_array($approval) && $approval !== []): ?>
+    <?php require APP_ROOT . '/app/Views/components/approval_modal.php'; ?>
+<?php endif; ?>
+
+<script src="<?= View::e(Request::asset('js/app.js')) ?>" defer></script>
+</body>
+</html>

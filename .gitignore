@@ -1,0 +1,5 @@
+.env
+.env.*
+/history.txt
+/storage/logs/*
+/storage/sessions/*
