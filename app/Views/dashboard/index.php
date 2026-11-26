@@ -11,8 +11,8 @@ $moduleCards = [
     ['icon' => 'returns', 'title' => 'Returns', 'desc' => 'Process approved returns and review refund history.', 'route' => 'returns', 'label' => 'Open returns', 'roles' => ['Administrator', 'Manager']],
     ['icon' => 'reports', 'title' => 'Reports', 'desc' => 'Generate sales reports and review the security audit trail.', 'route' => 'reports', 'label' => 'Open reports', 'roles' => ['Administrator', 'Manager']],
     ['icon' => 'administration', 'title' => 'Administration', 'desc' => 'Manage users and application roles with critical-action approval.', 'route' => 'admin/users', 'label' => 'Open admin', 'roles' => ['Administrator']],
-    ['icon' => 'suppliers', 'title' => 'Suppliers', 'desc' => 'Review supplier contacts and add suppliers to the catalogue.', 'route' => 'admin/records&section=suppliers', 'label' => 'Manage suppliers', 'roles' => ['Administrator']],
-    ['icon' => 'customers', 'title' => 'Customers', 'desc' => 'Review customer records and add customers for point of sale.', 'route' => 'admin/records&section=customers', 'label' => 'Manage customers', 'roles' => ['Administrator']],
+    ['icon' => 'suppliers', 'title' => 'Suppliers', 'desc' => 'Review supplier contacts and add suppliers to the catalogue.', 'route' => 'admin/records&section=suppliers', 'label' => 'Manage suppliers', 'roles' => ['Administrator', 'Manager']],
+    ['icon' => 'customers', 'title' => 'Customers', 'desc' => 'Review customer records and add customers for point of sale.', 'route' => 'admin/records&section=customers', 'label' => 'Manage customers', 'roles' => ['Administrator', 'Manager', 'Employee']],
     ['icon' => 'employees', 'title' => 'Employees', 'desc' => 'Review staff records and add employees for sales and returns.', 'route' => 'admin/records&section=employees', 'label' => 'Manage employees', 'roles' => ['Administrator']],
 ];
 
@@ -28,17 +28,63 @@ $cardIconPaths = [
     'customers' => '<circle cx="9" cy="8" r="4"/><path d="M3 21v-2a6 6 0 0 1 12 0v2"/><path d="M16 4.5a4 4 0 0 1 0 7.5M21 21v-2a6 6 0 0 0-4-5.7"/>',
     'employees' => '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 5V3h8v2M8 11h8M8 15h5"/>',
 ];
+
+if (Auth::hasRole('Administrator')) {
+    $hero = [
+        'eyebrow' => 'Administrator workspace',
+        'description' => 'Keep stock, sales and team operations aligned from one clear view.',
+        'action' => 'Manage business records',
+        'route' => 'admin/records&section=suppliers',
+        'icon' => 'administration',
+    ];
+} elseif (Auth::hasRole('Manager')) {
+    $hero = [
+        'eyebrow' => 'Manager workspace',
+        'description' => 'Stay on top of sales, returns and stock throughout the day.',
+        'action' => 'Open point of sale',
+        'route' => 'pos',
+        'icon' => 'reports',
+    ];
+} elseif (Auth::hasRole('Employee')) {
+    $hero = [
+        'eyebrow' => 'Team workspace',
+        'description' => 'Find products, serve customers and keep each transaction moving.',
+        'action' => 'Open point of sale',
+        'route' => 'pos',
+        'icon' => 'pos',
+    ];
+} else {
+    $hero = [
+        'eyebrow' => 'Customer workspace',
+        'description' => 'Explore the catalogue and keep track of your purchases.',
+        'action' => 'Browse product catalog',
+        'route' => 'catalog',
+        'icon' => 'catalog',
+    ];
+}
 ?>
-<section class="page-heading">
-    <div>
-        <p class="eyebrow">Workspace</p>
-        <h1>Welcome, <?= View::e($user['full_name']) ?></h1>
-        <p class="muted">
-            Signed in as <strong><?= View::e($user['username']) ?></strong>
-            with the <strong><?= View::e($user['role']) ?></strong> role.
-        </p>
+<section class="dashboard-hero">
+    <div class="dashboard-hero-copy">
+        <p class="eyebrow"><?= View::e($hero['eyebrow']) ?></p>
+        <h1>Welcome back, <?= View::e($user['full_name']) ?>.</h1>
+        <p><?= View::e($hero['description']) ?></p>
+        <a class="btn btn-hero" href="<?= View::e(Request::url($hero['route'])) ?>">
+            <?= View::e($hero['action']) ?>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M5 12h14m-6-6 6 6-6 6"/>
+            </svg>
+        </a>
     </div>
-    <div class="session-active">Session active</div>
+    <div class="dashboard-hero-art" aria-hidden="true">
+        <span class="dashboard-hero-orbit"></span>
+        <span class="dashboard-hero-orbit dashboard-hero-orbit-small"></span>
+        <div class="dashboard-hero-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                <?= $cardIconPaths[$hero['icon']] ?>
+            </svg>
+        </div>
+        <div class="dashboard-hero-status"><span></span><?= View::e($user['role']) ?> workspace</div>
+    </div>
 </section>
 
 <section class="card-grid">

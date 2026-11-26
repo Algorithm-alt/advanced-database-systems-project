@@ -29,7 +29,7 @@ $navBadge = static function (string $key) use ($sidebarCounts): ?string {
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="<?= View::e(Request::asset('css/app.css')) ?>">
 </head>
-<body class="<?= $authUser !== null ? 'has-sidebar' : '' ?>">
+<body class="<?= $authUser !== null ? 'has-sidebar' : ($currentRoute === 'login' ? 'auth-page' : '') ?>">
 <header class="site-header">
     <div class="header-inner <?= $authUser !== null ? 'header-fluid' : 'shell' ?>">
         <div class="header-left">
@@ -107,6 +107,15 @@ $navBadge = static function (string $key) use ($sidebarCounts): ?string {
         </div>
     </div>
 </header>
+
+<?php if ($currentRoute === 'login'): ?>
+    <div class="auth-ambient" aria-hidden="true">
+        <span class="auth-orbit auth-orbit-one"></span>
+        <span class="auth-orbit auth-orbit-two"></span>
+        <span class="auth-glow auth-glow-one"></span>
+        <span class="auth-glow auth-glow-two"></span>
+    </div>
+<?php endif; ?>
 
 <?php if ($authUser !== null): ?>
     <div class="sidebar-backdrop" data-sidebar-backdrop></div>
@@ -217,8 +226,9 @@ $navBadge = static function (string $key) use ($sidebarCounts): ?string {
                         </a>
                     <?php endif; ?>
 
-                    <?php if (Auth::hasRole('Administrator')): ?>
-                        <a href="<?= View::e(Request::url('admin/records')) ?>" aria-label="Business Records" title="Business Records"
+                    <?php if (Auth::hasRole('Administrator', 'Manager', 'Employee')): ?>
+                        <?php $recordsSection = Auth::hasRole('Administrator', 'Manager') ? 'suppliers' : 'customers'; ?>
+                        <a href="<?= View::e(Request::url('admin/records&section=' . $recordsSection)) ?>" aria-label="Business Records" title="Business Records"
                            <?= str_starts_with($currentRoute, 'admin/records') ? 'aria-current="page"' : '' ?>>
                             <span class="nav-ico" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
@@ -228,6 +238,9 @@ $navBadge = static function (string $key) use ($sidebarCounts): ?string {
                             </span>
                             <span>Business Records</span>
                         </a>
+                    <?php endif; ?>
+
+                    <?php if (Auth::hasRole('Administrator')): ?>
                         <a href="<?= View::e(Request::url('admin/users')) ?>" aria-label="Users and Roles" title="Users and Roles"
                            <?= $currentRoute === 'admin/users' ? 'aria-current="page"' : '' ?>>
                             <span class="nav-ico" aria-hidden="true">

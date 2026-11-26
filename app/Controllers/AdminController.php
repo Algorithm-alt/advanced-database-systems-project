@@ -19,32 +19,51 @@ final class AdminController
 {
     public static function records(): void
     {
-        Auth::requireRole('Administrator');
+        Auth::requireRole('Administrator', 'Manager', 'Employee');
 
-        $section = (string)Request::input('section', 'suppliers');
-        if (!in_array($section, ['suppliers', 'customers', 'employees'], true)) {
-            $section = 'suppliers';
+        $sectionRoles = self::recordSections();
+        $availableSections = array_filter(
+            $sectionRoles,
+            static fn(array $item): bool => Auth::hasRole(...$item['roles'])
+        );
+        $defaultSection = Auth::hasRole('Employee') && !Auth::hasRole('Administrator', 'Manager')
+            ? 'customers'
+            : 'suppliers';
+        $section = (string)Request::input('section', $defaultSection);
+        if (!isset($sectionRoles[$section])) {
+            $section = $defaultSection;
         }
+        Auth::requireRole(...$sectionRoles[$section]['roles']);
+
+        $records = ['suppliers' => [], 'customers' => [], 'employees' => []];
+        $records[$section] = match ($section) {
+            'suppliers' => BusinessData::suppliers(),
+            'customers' => BusinessData::customers(),
+            'employees' => BusinessData::employees(),
+        };
 
         View::render('admin/records', [
             'title' => 'Business records - Algorithm Hardware Plug',
             'section' => $section,
-            'suppliers' => BusinessData::suppliers(),
-            'customers' => BusinessData::customers(),
-            'employees' => BusinessData::employees(),
+            'sections' => $availableSections,
+            'suppliers' => $records['suppliers'],
+            'customers' => $records['customers'],
+            'employees' => $records['employees'],
         ]);
     }
 
     public static function createRecord(): void
     {
-        Auth::requireRole('Administrator');
+        Auth::requireRole('Administrator', 'Manager', 'Employee');
         Security::assertCsrf();
 
         $section = (string)Request::input('type', '');
-        if (!in_array($section, ['suppliers', 'customers', 'employees'], true)) {
+        $sectionRoles = self::recordSections();
+        if (!isset($sectionRoles[$section])) {
             Session::flash('error', 'Choose a valid business record type.');
             Response::redirect(Request::url('admin/records'));
         }
+        Auth::requireRole(...$sectionRoles[$section]['roles']);
 
         $email = (string)Request::input('email', '');
         if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
@@ -253,5 +272,14 @@ final class AdminController
     private static function newRecordCode(string $prefix): string
     {
         return $prefix . date('ymd') . strtoupper(bin2hex(random_bytes(3)));
+    }
+
+    private static function recordSections(): array
+    {
+        return [
+            'suppliers' => ['label' => 'Suppliers', 'roles' => ['Administrator', 'Manager']],
+            'customers' => ['label' => 'Customers', 'roles' => ['Administrator', 'Manager', 'Employee']],
+            'employees' => ['label' => 'Employees', 'roles' => ['Administrator']],
+        ];
     }
 }

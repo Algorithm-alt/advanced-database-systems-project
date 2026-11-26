@@ -1450,7 +1450,7 @@ BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
         DECLARE @StartedTran bit = 0;
-        EXEC dbo.sp_AssertAppRole_060 @AllowedRoles = N'Administrator';
+        EXEC dbo.sp_AssertAppRole_060 @AllowedRoles = N'Administrator,Manager';
 
         IF @SupplierCode IS NULL OR LTRIM(RTRIM(@SupplierCode)) = N''
             THROW 50120, N'Supplier code is required.', 1;
@@ -3209,7 +3209,7 @@ GRANT EXECUTE ON dbo.sp_GetAllRoles_060 TO rms_admin_060;
 GRANT EXECUTE ON dbo.sp_GetAdministrators_060 TO rms_admin_060, rms_manager_060;
 GRANT EXECUTE ON dbo.sp_ProcessCartSale_060 TO rms_admin_060, rms_manager_060, rms_staff_060;
 GRANT EXECUTE ON dbo.sp_ProcessCartReturn_060 TO rms_admin_060, rms_manager_060;
-GRANT EXECUTE ON dbo.sp_RegisterSupplier_060 TO rms_admin_060;
+GRANT EXECUTE ON dbo.sp_RegisterSupplier_060 TO rms_admin_060, rms_manager_060;
 GRANT EXECUTE ON dbo.sp_RegisterEmployee_060 TO rms_admin_060;
 GO
 

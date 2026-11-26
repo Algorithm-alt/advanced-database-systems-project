@@ -12,11 +12,11 @@ use App\Core\View;
 </section>
 
 <nav class="actions mb-24" aria-label="Business record types">
-    <?php foreach (['suppliers' => 'Suppliers', 'customers' => 'Customers', 'employees' => 'Employees'] as $key => $label): ?>
+    <?php foreach ($sections as $key => $details): ?>
         <a class="btn <?= $section === $key ? 'btn-primary' : 'btn-ghost' ?> btn-sm"
            href="<?= View::e(Request::url('admin/records&section=' . $key)) ?>"
            <?= $section === $key ? 'aria-current="page"' : '' ?>>
-            <?= View::e($label) ?>
+            <?= View::e($details['label']) ?>
         </a>
     <?php endforeach; ?>
 </nav>

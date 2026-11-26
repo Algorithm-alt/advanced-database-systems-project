@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return currency + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
-    // ── Dark mode toggle ───────────────────────────────────────────
     const themeToggle = document.querySelector('[data-theme-toggle]');
     const themeIcon   = document.querySelector('[data-theme-icon]');
     const themeLabel  = document.querySelector('[data-theme-label]');
@@ -37,7 +36,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ── Mobile left sidebar drawer ─────────────────────────────────
     const sidebarToggle   = document.querySelector('[data-sidebar-toggle]');
     const sidebarBackdrop = document.querySelector('[data-sidebar-backdrop]');
 
@@ -60,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ── Desktop sidebar collapse ──────────────────────────────────
     const sidebarCollapse = document.querySelector('[data-sidebar-collapse]');
     const sidebarCollapseGlyph = sidebarCollapse
         ? sidebarCollapse.querySelector('[data-sidebar-collapse-glyph]')
@@ -90,11 +87,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ── Autofocus ──────────────────────────────────────────────────
     const target = document.querySelector('[data-autofocus]');
     if (target) target.focus();
 
-    // ── Auto-dismiss flash notices ─────────────────────────────────
     document.querySelectorAll('.notice-stack .notice').forEach(function (notice) {
         const closeBtn = document.createElement('button');
         closeBtn.type = 'button';
@@ -132,7 +127,6 @@ document.addEventListener('DOMContentLoaded', function () {
         startTimer();
     });
 
-    // ── History back (CSP-safe) ────────────────────────────────────
     document.querySelectorAll('[data-back]').forEach(function (btn) {
         btn.addEventListener('click', function () {
             if (window.history.length > 1) {
@@ -143,7 +137,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ── Print button ───────────────────────────────────────────────
     const printButton = document.querySelector('[data-print]');
     if (printButton) {
         printButton.addEventListener('click', function () {
@@ -151,7 +144,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ── Live notifications ────────────────────────────────────────
     const notificationCenter = document.querySelector('[data-notification-center]');
     if (notificationCenter) {
         const notificationToggle = notificationCenter.querySelector('[data-notification-toggle]');
@@ -340,7 +332,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ── Return form auto-refund helper ─────────────────────────────
     const returnForm = document.querySelector('[data-return-form]');
     if (returnForm) {
         const refundInput = document.getElementById('refund_amount');
@@ -380,7 +371,6 @@ document.addEventListener('DOMContentLoaded', function () {
         updateReturnEstimate();
     }
 
-    // ── POS sale form ──────────────────────────────────────────────
     const form = document.querySelector('[data-sale-form]');
     if (!form) return;
 
