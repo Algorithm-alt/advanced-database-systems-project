@@ -6,9 +6,17 @@ use App\Core\View;
 ?>
 <section class="auth-grid">
     <div class="auth-card">
-        <p class="eyebrow">Secure access</p>
-        <h1>Sign in to your workspace</h1>
-        <p class="muted">Use your staff credentials to continue.</p>
+        <div class="auth-kicker">
+            <span class="auth-kicker-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                    <rect x="4" y="10" width="16" height="11" rx="2"/>
+                    <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>
+                </svg>
+            </span>
+            <span>Secure team access</span>
+        </div>
+        <h1>Welcome back<span class="auth-title-dot">.</span></h1>
+        <p class="auth-lead">Sign in to continue to your retail operations workspace.</p>
 
         <?php if ($loggedOut !== null): ?>
             <div class="notice notice-success" role="status">
@@ -16,7 +24,7 @@ use App\Core\View;
             </div>
         <?php endif; ?>
 
-        <form method="post" action="<?= View::e(Request::url('login')) ?>" class="form-stack" novalidate>
+        <form method="post" action="<?= View::e(Request::url('login')) ?>" class="form-stack">
             <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
 
             <div class="field">
@@ -32,8 +40,21 @@ use App\Core\View;
                        placeholder="Enter your password">
             </div>
 
-            <button type="submit" class="btn btn-primary mt-4">Sign in</button>
+            <button type="submit" class="btn btn-primary auth-submit mt-4">
+                <span>Sign in securely</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M5 12h14m-6-6 6 6-6 6"/>
+                </svg>
+            </button>
         </form>
+
+        <div class="auth-assurance">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/>
+                <path d="m9 12 2 2 4-4"/>
+            </svg>
+            <span>Your account is protected by role-based access and audited activity.</span>
+        </div>
 
         <?php if (Config::get('app.env') === 'local'): ?>
             <div class="demo-note">
@@ -45,13 +66,27 @@ use App\Core\View;
     </div>
 
     <aside class="auth-aside">
-        <p class="eyebrow eyebrow-light">Why choose us</p>
-        <h2>Built for the counter and the back office</h2>
+        <div class="auth-aside-brand">
+            <img src="<?= View::e(Request::asset('images/site-logo.svg')) ?>" alt="" width="48" height="48">
+            <span>ALGORITHM HARDWARE PLUG<small>RETAIL OPERATIONS</small></span>
+        </div>
+        <p class="eyebrow eyebrow-light">One connected workspace</p>
+        <h2>Keep every part of your business moving.</h2>
+        <p class="auth-aside-copy">A clear, secure home for the people, products and daily activity behind your store.</p>
         <ul class="feature-list">
             <li>Role-based access with database-enforced context</li>
             <li>Approval workflow for sensitive operations</li>
             <li>Tamper-proof audit trail for every critical action</li>
             <li>Inventory, sales, returns and reporting — all in one place</li>
         </ul>
+        <div class="auth-aside-footer">
+            <span class="auth-aside-footer-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                    <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/>
+                    <path d="m9 12 2 2 4-4"/>
+                </svg>
+            </span>
+            <span><strong>Secure by design</strong><small>Built for accountable retail operations.</small></span>
+        </div>
     </aside>
 </section>

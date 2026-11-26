@@ -3,9 +3,18 @@ use App\Core\Auth;
 use App\Core\Request;
 use App\Core\Session;
 use App\Core\View;
+use App\Models\BusinessData;
 
 $authUser = Auth::user();
 $currentRoute = Request::route();
+$sidebarCounts = $authUser !== null ? BusinessData::sidebarCounts() : [];
+$navBadge = static function (string $key) use ($sidebarCounts): ?string {
+    $count = (int)($sidebarCounts[$key] ?? 0);
+    if ($count <= 0) {
+        return null;
+    }
+    return $count > 99 ? '99+' : (string)$count;
+};
 ?>
 <!doctype html>
 <html lang="en">
@@ -14,6 +23,7 @@ $currentRoute = Request::route();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Algorithm Hardware Plug – Retail Management System">
     <title><?= View::e($title ?? 'Algorithm Hardware Plug') ?></title>
+    <link rel="icon" type="image/svg+xml" href="<?= View::e(Request::asset('images/site-logo.svg')) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
@@ -35,7 +45,7 @@ $currentRoute = Request::route();
             <a class="brand" href="<?= View::e(Request::url($authUser !== null ? 'dashboard' : 'login')) ?>"
                title="Go to <?= $authUser !== null ? 'dashboard' : 'sign in' ?>"
                aria-label="Algorithm Hardware Plug">
-                <span class="brand-mark">AHP</span>
+                <img class="brand-mark" src="<?= View::e(Request::asset('images/site-logo.svg')) ?>" alt="" width="42" height="42">
                 <span class="brand-text">
                     <strong>Algorithm Hardware Plug</strong>
                     <small>Retail Management System</small>
@@ -137,6 +147,9 @@ $currentRoute = Request::route();
                                 </svg>
                             </span>
                             <span>Inventory</span>
+                            <?php if (($badge = $navBadge('LowStockCount')) !== null): ?>
+                                <span class="nav-count nav-count-alert" aria-label="<?= View::e($badge) ?> low-stock items"><?= View::e($badge) ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="<?= View::e(Request::url('pos')) ?>" aria-label="Point of Sale" title="Point of Sale"
                            <?= str_starts_with($currentRoute, 'pos') ? 'aria-current="page"' : '' ?>>
@@ -148,6 +161,9 @@ $currentRoute = Request::route();
                                 </svg>
                             </span>
                             <span>Point of Sale</span>
+                            <?php if (($badge = $navBadge('SalesTodayCount')) !== null): ?>
+                                <span class="nav-count" aria-label="<?= View::e($badge) ?> sales today"><?= View::e($badge) ?></span>
+                            <?php endif; ?>
                         </a>
                     <?php else: ?>
                         <a href="<?= View::e(Request::url('catalog')) ?>" aria-label="Product Catalog" title="Product Catalog"
@@ -169,6 +185,9 @@ $currentRoute = Request::route();
                                 </svg>
                             </span>
                             <span>My Purchases</span>
+                            <?php if (($badge = $navBadge('PurchaseCount')) !== null): ?>
+                                <span class="nav-count" aria-label="<?= View::e($badge) ?> purchases"><?= View::e($badge) ?></span>
+                            <?php endif; ?>
                         </a>
                     <?php endif; ?>
 
@@ -182,6 +201,9 @@ $currentRoute = Request::route();
                                 </svg>
                             </span>
                             <span>Returns</span>
+                            <?php if (($badge = $navBadge('PendingReturnCount')) !== null): ?>
+                                <span class="nav-count nav-count-alert" aria-label="<?= View::e($badge) ?> pending returns"><?= View::e($badge) ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="<?= View::e(Request::url('reports')) ?>" aria-label="Sales Reports" title="Sales Reports"
                            <?= $currentRoute === 'reports' ? 'aria-current="page"' : '' ?>>

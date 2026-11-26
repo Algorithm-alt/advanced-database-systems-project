@@ -36,6 +36,11 @@ final class BusinessData
         return Database::fetchAll('EXEC dbo.sp_GetEmployees_060');
     }
 
+    public static function sidebarCounts(): array
+    {
+        return Database::fetchOne('EXEC dbo.sp_GetSidebarCounts_060') ?? [];
+    }
+
     public static function registerCustomer(
         string $customerCode,
         string $fullName,

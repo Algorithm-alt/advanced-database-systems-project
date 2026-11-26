@@ -2883,6 +2883,57 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE dbo.sp_GetSidebarCounts_060
+AS
+BEGIN
+    SET NOCOUNT ON;
+    EXEC dbo.sp_AssertAppRole_060 @AllowedRoles = N'Administrator,Manager,Employee,Customer';
+
+    DECLARE @AppUserID int = TRY_CONVERT(int, SESSION_CONTEXT(N'AppUserID'));
+    DECLARE @AppRole nvarchar(50) = TRY_CONVERT(nvarchar(50), SESSION_CONTEXT(N'AppRole'));
+    DECLARE @Today date = CONVERT(date, SYSDATETIME());
+    DECLARE @SalesTodayCount int = 0;
+    DECLARE @PurchaseCount int = 0;
+    DECLARE @PendingReturnCount int = 0;
+    DECLARE @LowStockCount int = 0;
+
+    IF @AppRole IN (N'Administrator', N'Manager', N'Employee')
+    BEGIN
+        SELECT @SalesTodayCount = COUNT(*)
+        FROM dbo.Sales_060
+        WHERE SaleDate >= @Today
+          AND SaleDate < DATEADD(day, 1, @Today)
+          AND Status <> N'CANCELLED';
+
+        SELECT @LowStockCount = COUNT(*)
+        FROM dbo.Products_060 p
+        LEFT JOIN dbo.Inventory_060 i ON i.ProductID = p.ProductID
+        WHERE p.IsActive = 1
+          AND ISNULL(i.QuantityOnHand, 0) <= p.ReorderLevel;
+    END
+
+    IF @AppRole = N'Customer'
+    BEGIN
+        SELECT @PurchaseCount = COUNT(*)
+        FROM dbo.Sales_060 s
+        JOIN dbo.Customers_060 c ON c.CustomerID = s.CustomerID
+        WHERE c.UserID = @AppUserID;
+    END
+
+    IF @AppRole IN (N'Administrator', N'Manager')
+    BEGIN
+        SELECT @PendingReturnCount = COUNT(*)
+        FROM dbo.Returns_060
+        WHERE Status = N'PENDING';
+    END
+
+    SELECT @SalesTodayCount AS SalesTodayCount,
+           @PurchaseCount AS PurchaseCount,
+           @PendingReturnCount AS PendingReturnCount,
+           @LowStockCount AS LowStockCount;
+END
+GO
+
 CREATE OR ALTER PROCEDURE dbo.sp_GetCategories_060
 AS
 BEGIN
@@ -3143,6 +3194,7 @@ END
 GO
 
 GRANT EXECUTE ON dbo.sp_GetInventoryOverview_060 TO rms_admin_060, rms_manager_060, rms_staff_060;
+GRANT EXECUTE ON dbo.sp_GetSidebarCounts_060 TO rms_admin_060, rms_manager_060, rms_staff_060;
 GRANT EXECUTE ON dbo.sp_GetCategories_060 TO rms_admin_060, rms_manager_060, rms_staff_060;
 GRANT EXECUTE ON dbo.sp_GetSuppliers_060 TO rms_admin_060, rms_manager_060;
 GRANT EXECUTE ON dbo.sp_GetCustomers_060 TO rms_admin_060, rms_manager_060, rms_staff_060;
