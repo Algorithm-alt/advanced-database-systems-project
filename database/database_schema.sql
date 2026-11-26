@@ -1437,6 +1437,107 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE dbo.sp_RegisterSupplier_060
+    @SupplierCode   nvarchar(20),
+    @CompanyName    nvarchar(100),
+    @ContactName    nvarchar(100) = NULL,
+    @Phone          nvarchar(30) = NULL,
+    @Email          nvarchar(256) = NULL,
+    @Address        nvarchar(255) = NULL,
+    @NewSupplierID  int OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        DECLARE @StartedTran bit = 0;
+        EXEC dbo.sp_AssertAppRole_060 @AllowedRoles = N'Administrator';
+
+        IF @SupplierCode IS NULL OR LTRIM(RTRIM(@SupplierCode)) = N''
+            THROW 50120, N'Supplier code is required.', 1;
+        IF @CompanyName IS NULL OR LTRIM(RTRIM(@CompanyName)) = N''
+            THROW 50121, N'Supplier company name is required.', 1;
+        IF @Email IS NOT NULL AND LTRIM(RTRIM(@Email)) <> N'' AND @Email NOT LIKE N'%@%'
+            THROW 50122, N'A valid supplier email address is required.', 1;
+        IF EXISTS (SELECT 1 FROM dbo.Suppliers_060 WHERE SupplierCode = @SupplierCode)
+            THROW 50123, N'A supplier with this code already exists.', 1;
+
+        IF @@TRANCOUNT = 0
+        BEGIN
+            BEGIN TRAN;
+            SET @StartedTran = 1;
+        END
+            INSERT dbo.Suppliers_060 (SupplierCode, CompanyName, ContactName, Phone, Email, [Address], IsActive)
+            VALUES (@SupplierCode, @CompanyName, @ContactName, @Phone, NULLIF(@Email, N''), @Address, 1);
+
+            SET @NewSupplierID = SCOPE_IDENTITY();
+
+            EXEC dbo.sp_WriteAudit_060
+                @Action = N'SUPPLIER_CREATE', @EntityType = N'Supplier',
+                @EntityID = @NewSupplierID, @Details = @CompanyName;
+        IF @StartedTran = 1
+            COMMIT TRAN;
+    END TRY
+    BEGIN CATCH
+        IF @StartedTran = 1 AND @@TRANCOUNT > 0
+            ROLLBACK TRAN;
+        THROW;
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_RegisterEmployee_060
+    @EmployeeCode   nvarchar(20),
+    @FullName       nvarchar(100),
+    @Position       nvarchar(50),
+    @HireDate       date,
+    @Department     nvarchar(50) = NULL,
+    @Phone          nvarchar(30) = NULL,
+    @Email          nvarchar(256) = NULL,
+    @NewEmployeeID  int OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        DECLARE @StartedTran bit = 0;
+        EXEC dbo.sp_AssertAppRole_060 @AllowedRoles = N'Administrator';
+
+        IF @EmployeeCode IS NULL OR LTRIM(RTRIM(@EmployeeCode)) = N''
+            THROW 50124, N'Employee code is required.', 1;
+        IF @FullName IS NULL OR LTRIM(RTRIM(@FullName)) = N''
+            THROW 50125, N'Employee name is required.', 1;
+        IF @Position IS NULL OR LTRIM(RTRIM(@Position)) = N''
+            THROW 50126, N'Employee position is required.', 1;
+        IF @HireDate IS NULL
+            THROW 50127, N'Employee hire date is required.', 1;
+        IF @Email IS NOT NULL AND LTRIM(RTRIM(@Email)) <> N'' AND @Email NOT LIKE N'%@%'
+            THROW 50128, N'A valid employee email address is required.', 1;
+        IF EXISTS (SELECT 1 FROM dbo.Employees_060 WHERE EmployeeCode = @EmployeeCode)
+            THROW 50129, N'An employee with this code already exists.', 1;
+
+        IF @@TRANCOUNT = 0
+        BEGIN
+            BEGIN TRAN;
+            SET @StartedTran = 1;
+        END
+            INSERT dbo.Employees_060 (EmployeeCode, FullName, Position, Department, Phone, Email, HireDate, IsActive)
+            VALUES (@EmployeeCode, @FullName, @Position, @Department, @Phone, NULLIF(@Email, N''), @HireDate, 1);
+
+            SET @NewEmployeeID = SCOPE_IDENTITY();
+
+            EXEC dbo.sp_WriteAudit_060
+                @Action = N'EMPLOYEE_CREATE', @EntityType = N'Employee',
+                @EntityID = @NewEmployeeID, @Details = @FullName;
+        IF @StartedTran = 1
+            COMMIT TRAN;
+    END TRY
+    BEGIN CATCH
+        IF @StartedTran = 1 AND @@TRANCOUNT > 0
+            ROLLBACK TRAN;
+        THROW;
+    END CATCH
+END
+GO
+
 CREATE OR ALTER PROCEDURE dbo.sp_UpdateInventory_060
     @ProductID         int,
     @QuantityChange    int,
@@ -2796,7 +2897,9 @@ AS
 BEGIN
     SET NOCOUNT ON;
     EXEC dbo.sp_AssertAppRole_060 @AllowedRoles = N'Administrator,Manager';
-    SELECT SupplierID, CompanyName AS SupplierName FROM dbo.Suppliers_060 WHERE IsActive = 1 ORDER BY CompanyName;
+    SELECT SupplierID, SupplierCode, CompanyName AS SupplierName, ContactName, Phone, Email,
+           [Address], IsActive
+    FROM dbo.Suppliers_060 WHERE IsActive = 1 ORDER BY CompanyName;
 END
 GO
 
@@ -2805,7 +2908,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     EXEC dbo.sp_AssertAppRole_060 @AllowedRoles = N'Administrator,Manager,Employee';
-    SELECT CustomerID, CustomerCode, FullName, Email, Phone
+    SELECT CustomerID, CustomerCode, FullName, Email, Phone, [Address], LoyaltyPoints, IsActive
     FROM dbo.Customers_060 WHERE IsActive = 1 ORDER BY FullName;
 END
 GO
@@ -2815,7 +2918,8 @@ AS
 BEGIN
     SET NOCOUNT ON;
     EXEC dbo.sp_AssertAppRole_060 @AllowedRoles = N'Administrator,Manager,Employee';
-    SELECT e.EmployeeID, e.EmployeeCode, e.FullName, e.Position
+    SELECT e.EmployeeID, e.EmployeeCode, e.FullName, e.Position, e.Department,
+           e.Phone, e.Email, e.HireDate, e.IsActive
     FROM dbo.Employees_060 e WHERE e.IsActive = 1 ORDER BY e.FullName;
 END
 GO
@@ -3053,6 +3157,8 @@ GRANT EXECUTE ON dbo.sp_GetAllRoles_060 TO rms_admin_060;
 GRANT EXECUTE ON dbo.sp_GetAdministrators_060 TO rms_admin_060, rms_manager_060;
 GRANT EXECUTE ON dbo.sp_ProcessCartSale_060 TO rms_admin_060, rms_manager_060, rms_staff_060;
 GRANT EXECUTE ON dbo.sp_ProcessCartReturn_060 TO rms_admin_060, rms_manager_060;
+GRANT EXECUTE ON dbo.sp_RegisterSupplier_060 TO rms_admin_060;
+GRANT EXECUTE ON dbo.sp_RegisterEmployee_060 TO rms_admin_060;
 GO
 
 PRINT 'SECTION 18 OK - Business module procedures are available.';

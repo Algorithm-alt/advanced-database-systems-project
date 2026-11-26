@@ -339,6 +339,14 @@ code {
     width: 24px;
     height: 24px;
 }
+.section-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.section-heading h2 { margin-bottom: 4px; }
 
 /* ─── Auth layout ────────────────────────────────────────────── */
 .auth-grid {
@@ -928,6 +936,7 @@ td.number, th.number {
     display: grid;
     grid-template-columns: 252px minmax(0, 1fr);
     min-height: calc(100vh - 69px);
+    transition: grid-template-columns 180ms ease;
 }
 
 .sidebar {
@@ -944,14 +953,47 @@ td.number, th.number {
     overflow-y: auto;
 }
 
+.sidebar-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 0 4px 0 10px;
+}
+
 .sidebar-heading {
-    padding: 0 10px;
-    margin: 0 0 8px;
+    margin: 0;
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--muted);
+}
+
+.sidebar-collapse {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.sidebar-collapse:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+}
+
+.sidebar-collapse svg {
+    width: 18px;
+    height: 18px;
 }
 
 .sidebar-nav {
@@ -996,6 +1038,193 @@ td.number, th.number {
     height: 18px;
 }
 
+.notification-center {
+    position: relative;
+}
+
+.notification-toggle {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid var(--line-dark);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--ink-soft);
+    cursor: pointer;
+}
+
+.notification-toggle:hover,
+.notification-toggle[aria-expanded="true"] {
+    background: var(--surface-2);
+    color: var(--ink);
+}
+
+.notification-toggle svg {
+    width: 19px;
+    height: 19px;
+}
+
+.notification-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--surface);
+    border-radius: 999px;
+    background: var(--danger);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.notification-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    width: min(390px, calc(100vw - 32px));
+    max-height: min(70vh, 520px);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+}
+
+.notification-panel[hidden] {
+    display: none;
+}
+
+.notification-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+}
+
+.notification-panel-header > div {
+    display: grid;
+    gap: 2px;
+}
+
+.notification-panel-header strong {
+    font-size: 14px;
+}
+
+.notification-panel-header small,
+.notification-empty {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.notification-mark-read {
+    padding: 4px 0;
+    border: 0;
+    background: none;
+    color: var(--brand);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.notification-list {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 6px;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.notification-item {
+    display: grid;
+    grid-template-columns: 8px minmax(0, 1fr);
+    align-items: start;
+    gap: 10px;
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+}
+
+.notification-item:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+}
+
+.notification-item.is-unread {
+    background: var(--brand-bg);
+}
+
+.notification-dot {
+    width: 7px;
+    height: 7px;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.notification-item.is-unread .notification-dot {
+    background: var(--brand);
+}
+
+.notification-item strong {
+    display: block;
+    font-size: 13px;
+}
+
+.notification-item span:last-child {
+    display: block;
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.notification-empty {
+    margin: 0;
+    padding: 18px 16px;
+    text-align: center;
+}
+
+.notification-toast {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 900;
+    width: min(360px, calc(100vw - 40px));
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--brand);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-lg);
+}
+
+.notification-toast strong {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 13px;
+}
+
+.notification-toast span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
 .sidebar-footer {
     border-top: 1px solid var(--line);
     padding-top: 14px;
@@ -1019,6 +1248,49 @@ td.number, th.number {
 .sidebar-signout {
     width: 100%;
     justify-content: flex-start;
+}
+
+@media (min-width: 961px) {
+    body.sidebar-collapsed .app-shell {
+        grid-template-columns: 76px minmax(0, 1fr);
+    }
+
+    body.sidebar-collapsed .sidebar {
+        padding-inline: 8px;
+    }
+
+    body.sidebar-collapsed .sidebar-topline {
+        justify-content: center;
+        padding: 0;
+    }
+
+    body.sidebar-collapsed .sidebar-heading,
+    body.sidebar-collapsed .sidebar-nav a > span:not(.nav-ico),
+    body.sidebar-collapsed .sidebar-user,
+    body.sidebar-collapsed .sidebar-signout > span {
+        display: none;
+    }
+
+    body.sidebar-collapsed .sidebar-collapse {
+        width: 36px;
+        height: 36px;
+    }
+
+    body.sidebar-collapsed .sidebar-nav a {
+        justify-content: center;
+        gap: 0;
+        padding-inline: 0;
+        border-left-color: transparent;
+    }
+
+    body.sidebar-collapsed .sidebar-footer {
+        align-items: center;
+    }
+
+    body.sidebar-collapsed .sidebar-signout {
+        justify-content: center;
+        padding-inline: 0;
+    }
 }
 
 .btn-signout:hover {
@@ -1063,6 +1335,10 @@ td.number, th.number {
 @media (max-width: 960px) {
     .app-shell {
         grid-template-columns: 1fr;
+    }
+
+    .sidebar-collapse {
+        display: none;
     }
 
     .icon-btn.sidebar-toggle {

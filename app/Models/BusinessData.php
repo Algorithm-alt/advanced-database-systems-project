@@ -36,6 +36,72 @@ final class BusinessData
         return Database::fetchAll('EXEC dbo.sp_GetEmployees_060');
     }
 
+    public static function registerCustomer(
+        string $customerCode,
+        string $fullName,
+        string $email,
+        ?string $phone,
+        ?string $address
+    ): array {
+        return Database::call(
+            'dbo.sp_RegisterCustomer_060',
+            [
+                'CustomerCode' => $customerCode,
+                'FullName' => $fullName,
+                'Email' => $email,
+                'Phone' => $phone,
+                'Address' => $address,
+            ],
+            ['NewCustomerID' => 'int']
+        );
+    }
+
+    public static function registerSupplier(
+        string $supplierCode,
+        string $companyName,
+        ?string $contactName,
+        ?string $phone,
+        ?string $email,
+        ?string $address
+    ): array {
+        return Database::call(
+            'dbo.sp_RegisterSupplier_060',
+            [
+                'SupplierCode' => $supplierCode,
+                'CompanyName' => $companyName,
+                'ContactName' => $contactName,
+                'Phone' => $phone,
+                'Email' => $email,
+                'Address' => $address,
+            ],
+            ['NewSupplierID' => 'int']
+        );
+    }
+
+    public static function registerEmployee(
+        string $employeeCode,
+        string $fullName,
+        string $position,
+        ?string $department,
+        ?string $phone,
+        ?string $email,
+        string $hireDate
+    ): array {
+        return Database::call(
+            'dbo.sp_RegisterEmployee_060',
+            [
+                'EmployeeCode' => $employeeCode,
+                'FullName' => $fullName,
+                'Position' => $position,
+                'Department' => $department,
+                'Phone' => $phone,
+                'Email' => $email,
+                'HireDate' => $hireDate,
+            ],
+            ['NewEmployeeID' => 'int']
+        );
+    }
+
     public static function inventoryTransactions(?int $productId = null, ?string $from = null, ?string $to = null): array
     {
         return Database::fetchAll(

@@ -17,6 +17,113 @@ use Throwable;
 
 final class AdminController
 {
+    public static function records(): void
+    {
+        Auth::requireRole('Administrator');
+
+        $section = (string)Request::input('section', 'suppliers');
+        if (!in_array($section, ['suppliers', 'customers', 'employees'], true)) {
+            $section = 'suppliers';
+        }
+
+        View::render('admin/records', [
+            'title' => 'Business records - Algorithm Hardware Plug',
+            'section' => $section,
+            'suppliers' => BusinessData::suppliers(),
+            'customers' => BusinessData::customers(),
+            'employees' => BusinessData::employees(),
+        ]);
+    }
+
+    public static function createRecord(): void
+    {
+        Auth::requireRole('Administrator');
+        Security::assertCsrf();
+
+        $section = (string)Request::input('type', '');
+        if (!in_array($section, ['suppliers', 'customers', 'employees'], true)) {
+            Session::flash('error', 'Choose a valid business record type.');
+            Response::redirect(Request::url('admin/records'));
+        }
+
+        $email = (string)Request::input('email', '');
+        if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            Session::flash('error', 'Enter a valid email address.');
+            Response::redirect(Request::url('admin/records&section=' . $section));
+        }
+
+        try {
+            if ($section === 'suppliers') {
+                $companyName = (string)Request::input('company_name', '');
+                $contactName = (string)Request::input('contact_name', '');
+                $phone = (string)Request::input('phone', '');
+                $address = (string)Request::input('address', '');
+                if ($companyName === '' || strlen($companyName) > 100 || strlen($contactName) > 100
+                    || strlen($phone) > 30 || strlen($email) > 256 || strlen($address) > 255) {
+                    Session::flash('error', 'Enter a supplier company name and keep contact details within the allowed lengths.');
+                    Response::redirect(Request::url('admin/records&section=suppliers'));
+                }
+
+                $result = BusinessData::registerSupplier(
+                    self::newRecordCode('SUP'),
+                    $companyName,
+                    $contactName !== '' ? $contactName : null,
+                    $phone !== '' ? $phone : null,
+                    $email !== '' ? $email : null,
+                    $address !== '' ? $address : null
+                );
+                Session::flash('success', 'Supplier added (ID #' . (int)($result['NewSupplierID'] ?? 0) . ').');
+            } elseif ($section === 'customers') {
+                $fullName = (string)Request::input('full_name', '');
+                $phone = (string)Request::input('phone', '');
+                $address = (string)Request::input('address', '');
+                if ($fullName === '' || $email === '' || strlen($fullName) > 100
+                    || strlen($phone) > 30 || strlen($email) > 256 || strlen($address) > 255) {
+                    Session::flash('error', 'Enter the customer name and email, and keep each value within the allowed length.');
+                    Response::redirect(Request::url('admin/records&section=customers'));
+                }
+
+                $result = BusinessData::registerCustomer(
+                    self::newRecordCode('CUST'),
+                    $fullName,
+                    $email,
+                    $phone !== '' ? $phone : null,
+                    $address !== '' ? $address : null
+                );
+                Session::flash('success', 'Customer added (ID #' . (int)($result['NewCustomerID'] ?? 0) . ').');
+            } else {
+                $fullName = (string)Request::input('full_name', '');
+                $position = (string)Request::input('position', '');
+                $department = (string)Request::input('department', '');
+                $phone = (string)Request::input('phone', '');
+                $hireDate = (string)Request::input('hire_date', '');
+                $parsedHireDate = \DateTimeImmutable::createFromFormat('!Y-m-d', $hireDate);
+                if ($fullName === '' || $position === '' || $parsedHireDate === false
+                    || $parsedHireDate->format('Y-m-d') !== $hireDate
+                    || strlen($fullName) > 100 || strlen($position) > 50 || strlen($department) > 50
+                    || strlen($phone) > 30 || strlen($email) > 256) {
+                    Session::flash('error', 'Enter a valid employee name, position, hire date and contact details.');
+                    Response::redirect(Request::url('admin/records&section=employees'));
+                }
+
+                $result = BusinessData::registerEmployee(
+                    self::newRecordCode('EMP'),
+                    $fullName,
+                    $position,
+                    $department !== '' ? $department : null,
+                    $phone !== '' ? $phone : null,
+                    $email !== '' ? $email : null,
+                    $hireDate
+                );
+                Session::flash('success', 'Employee added (ID #' . (int)($result['NewEmployeeID'] ?? 0) . ').');
+            }
+        } catch (Throwable $exception) {
+            Session::flash('error', 'Could not add the record: ' . $exception->getMessage());
+        }
+
+        Response::redirect(Request::url('admin/records&section=' . $section));
+    }
+
     public static function users(): void
     {
         Auth::requireRole('Administrator');
@@ -141,5 +248,10 @@ final class AdminController
         return Config::get('app.env') === 'local'
             ? (string)Config::get('app.approval_phrase', '')
             : 'Enter the approval phrase';
+    }
+
+    private static function newRecordCode(string $prefix): string
+    {
+        return $prefix . date('ymd') . strtoupper(bin2hex(random_bytes(3)));
     }
 }

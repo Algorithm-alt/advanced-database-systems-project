@@ -11,6 +11,9 @@ $moduleCards = [
     ['icon' => 'returns', 'title' => 'Returns', 'desc' => 'Process approved returns and review refund history.', 'route' => 'returns', 'label' => 'Open returns', 'roles' => ['Administrator', 'Manager']],
     ['icon' => 'reports', 'title' => 'Reports', 'desc' => 'Generate sales reports and review the security audit trail.', 'route' => 'reports', 'label' => 'Open reports', 'roles' => ['Administrator', 'Manager']],
     ['icon' => 'administration', 'title' => 'Administration', 'desc' => 'Manage users and application roles with critical-action approval.', 'route' => 'admin/users', 'label' => 'Open admin', 'roles' => ['Administrator']],
+    ['icon' => 'suppliers', 'title' => 'Suppliers', 'desc' => 'Review supplier contacts and add suppliers to the catalogue.', 'route' => 'admin/records&section=suppliers', 'label' => 'Manage suppliers', 'roles' => ['Administrator']],
+    ['icon' => 'customers', 'title' => 'Customers', 'desc' => 'Review customer records and add customers for point of sale.', 'route' => 'admin/records&section=customers', 'label' => 'Manage customers', 'roles' => ['Administrator']],
+    ['icon' => 'employees', 'title' => 'Employees', 'desc' => 'Review staff records and add employees for sales and returns.', 'route' => 'admin/records&section=employees', 'label' => 'Manage employees', 'roles' => ['Administrator']],
 ];
 
 $cardIconPaths = [
@@ -21,6 +24,9 @@ $cardIconPaths = [
     'returns' => '<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-2"/>',
     'reports' => '<path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/>',
     'administration' => '<circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.7-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a7 7 0 0 1 0 2Z"/>',
+    'suppliers' => '<path d="M3 7 12 3l9 4-9 4-9-4Z"/><path d="M3 12l9 4 9-4M3 17l9 4 9-4"/>',
+    'customers' => '<circle cx="9" cy="8" r="4"/><path d="M3 21v-2a6 6 0 0 1 12 0v2"/><path d="M16 4.5a4 4 0 0 1 0 7.5M21 21v-2a6 6 0 0 0-4-5.7"/>',
+    'employees' => '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 5V3h8v2M8 11h8M8 15h5"/>',
 ];
 ?>
 <section class="page-heading">

@@ -44,6 +44,35 @@ $currentRoute = Request::route();
         </div>
 
         <div class="header-actions">
+            <?php if (Auth::hasRole('Administrator', 'Manager', 'Employee')): ?>
+                <div class="notification-center"
+                     data-notification-center
+                     data-notifications-url="<?= View::e(Request::url('notifications')) ?>"
+                     data-notification-user="<?= (int)$authUser['id'] ?>">
+                    <button type="button" class="notification-toggle" data-notification-toggle
+                            aria-label="Open notifications" aria-expanded="false" title="Notifications">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+                            <path d="M10 21h4"/>
+                        </svg>
+                        <span class="notification-count" data-notification-count hidden>0</span>
+                    </button>
+                    <section class="notification-panel" data-notification-panel role="region"
+                             aria-label="Notifications" hidden>
+                        <div class="notification-panel-header">
+                            <div>
+                                <strong>Notifications</strong>
+                                <small data-notification-status aria-live="polite">Checking for updates…</small>
+                            </div>
+                            <button type="button" class="notification-mark-read" data-notification-read>
+                                Mark all read
+                            </button>
+                        </div>
+                        <ul class="notification-list" data-notification-list></ul>
+                        <p class="notification-empty" data-notification-empty hidden>No active notifications.</p>
+                    </section>
+                </div>
+            <?php endif; ?>
             <button type="button" class="btn btn-ghost btn-sm theme-toggle" data-theme-toggle
                     data-tooltip="Switch to dark mode" title="Switch to dark mode" aria-label="Switch to dark mode">
                 <span class="theme-icon" data-theme-icon aria-hidden="true">
@@ -74,9 +103,18 @@ $currentRoute = Request::route();
     <div class="app-shell">
         <aside class="sidebar" id="app-sidebar" aria-label="Main navigation">
             <div class="sidebar-section">
-                <p class="sidebar-heading">Workspace</p>
+                <div class="sidebar-topline">
+                    <p class="sidebar-heading">Workspace</p>
+                    <button type="button" class="sidebar-collapse" data-sidebar-collapse
+                            aria-label="Collapse navigation sidebar" aria-expanded="true"
+                            title="Collapse navigation sidebar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <path data-sidebar-collapse-glyph d="m14 18-6-6 6-6m6 12-6-6 6-6"/>
+                        </svg>
+                    </button>
+                </div>
                 <nav class="sidebar-nav">
-                    <a href="<?= View::e(Request::url('dashboard')) ?>"
+                    <a href="<?= View::e(Request::url('dashboard')) ?>" aria-label="Dashboard" title="Dashboard"
                        <?= $currentRoute === 'dashboard' ? 'aria-current="page"' : '' ?>>
                         <span class="nav-ico" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
@@ -90,7 +128,7 @@ $currentRoute = Request::route();
                     </a>
 
                     <?php if (Auth::hasRole('Administrator', 'Manager', 'Employee')): ?>
-                        <a href="<?= View::e(Request::url('inventory')) ?>"
+                        <a href="<?= View::e(Request::url('inventory')) ?>" aria-label="Inventory" title="Inventory"
                            <?= str_starts_with($currentRoute, 'inventory') ? 'aria-current="page"' : '' ?>>
                             <span class="nav-ico" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
@@ -100,7 +138,7 @@ $currentRoute = Request::route();
                             </span>
                             <span>Inventory</span>
                         </a>
-                        <a href="<?= View::e(Request::url('pos')) ?>"
+                        <a href="<?= View::e(Request::url('pos')) ?>" aria-label="Point of Sale" title="Point of Sale"
                            <?= str_starts_with($currentRoute, 'pos') ? 'aria-current="page"' : '' ?>>
                             <span class="nav-ico" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
@@ -112,7 +150,7 @@ $currentRoute = Request::route();
                             <span>Point of Sale</span>
                         </a>
                     <?php else: ?>
-                        <a href="<?= View::e(Request::url('catalog')) ?>"
+                        <a href="<?= View::e(Request::url('catalog')) ?>" aria-label="Product Catalog" title="Product Catalog"
                            <?= $currentRoute === 'catalog' ? 'aria-current="page"' : '' ?>>
                             <span class="nav-ico" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
@@ -122,7 +160,7 @@ $currentRoute = Request::route();
                             </span>
                             <span>Product Catalog</span>
                         </a>
-                        <a href="<?= View::e(Request::url('my-sales')) ?>"
+                        <a href="<?= View::e(Request::url('my-sales')) ?>" aria-label="My Purchases" title="My Purchases"
                            <?= $currentRoute === 'my-sales' ? 'aria-current="page"' : '' ?>>
                             <span class="nav-ico" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
@@ -135,7 +173,7 @@ $currentRoute = Request::route();
                     <?php endif; ?>
 
                     <?php if (Auth::hasRole('Administrator', 'Manager')): ?>
-                        <a href="<?= View::e(Request::url('returns')) ?>"
+                        <a href="<?= View::e(Request::url('returns')) ?>" aria-label="Returns" title="Returns"
                            <?= str_starts_with($currentRoute, 'returns') ? 'aria-current="page"' : '' ?>>
                             <span class="nav-ico" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
@@ -145,7 +183,7 @@ $currentRoute = Request::route();
                             </span>
                             <span>Returns</span>
                         </a>
-                        <a href="<?= View::e(Request::url('reports')) ?>"
+                        <a href="<?= View::e(Request::url('reports')) ?>" aria-label="Sales Reports" title="Sales Reports"
                            <?= $currentRoute === 'reports' ? 'aria-current="page"' : '' ?>>
                             <span class="nav-ico" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
@@ -158,8 +196,18 @@ $currentRoute = Request::route();
                     <?php endif; ?>
 
                     <?php if (Auth::hasRole('Administrator')): ?>
-                        <a href="<?= View::e(Request::url('admin/users')) ?>"
-                           <?= str_starts_with($currentRoute, 'admin') ? 'aria-current="page"' : '' ?>>
+                        <a href="<?= View::e(Request::url('admin/records')) ?>" aria-label="Business Records" title="Business Records"
+                           <?= str_starts_with($currentRoute, 'admin/records') ? 'aria-current="page"' : '' ?>>
+                            <span class="nav-ico" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                    <path d="M3 7 12 3l9 4-9 4-9-4Z"/>
+                                    <path d="M3 12l9 4 9-4M3 17l9 4 9-4"/>
+                                </svg>
+                            </span>
+                            <span>Business Records</span>
+                        </a>
+                        <a href="<?= View::e(Request::url('admin/users')) ?>" aria-label="Users and Roles" title="Users and Roles"
+                           <?= $currentRoute === 'admin/users' ? 'aria-current="page"' : '' ?>>
                             <span class="nav-ico" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
                                     <circle cx="9" cy="8" r="4"/>
@@ -169,7 +217,7 @@ $currentRoute = Request::route();
                             </span>
                             <span>Users &amp; Roles</span>
                         </a>
-                        <a href="<?= View::e(Request::url('reports/audit')) ?>"
+                        <a href="<?= View::e(Request::url('reports/audit')) ?>" aria-label="Audit Trail" title="Audit Trail"
                            <?= $currentRoute === 'reports/audit' ? 'aria-current="page"' : '' ?>>
                             <span class="nav-ico" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
@@ -188,7 +236,8 @@ $currentRoute = Request::route();
                     <strong><?= View::e($authUser['full_name']) ?></strong>
                     <small><?= View::e($authUser['username']) ?> &middot; <?= View::e($authUser['role']) ?></small>
                 </div>
-                <a class="btn btn-ghost btn-sm btn-signout sidebar-signout" href="<?= View::e(Request::url('logout')) ?>">
+                <a class="btn btn-ghost btn-sm btn-signout sidebar-signout" href="<?= View::e(Request::url('logout')) ?>"
+                   aria-label="Sign out" title="Sign out">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                         <polyline points="16 17 21 12 16 7"/>

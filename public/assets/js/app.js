@@ -60,6 +60,36 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // ── Desktop sidebar collapse ──────────────────────────────────
+    const sidebarCollapse = document.querySelector('[data-sidebar-collapse]');
+    const sidebarCollapseGlyph = sidebarCollapse
+        ? sidebarCollapse.querySelector('[data-sidebar-collapse-glyph]')
+        : null;
+    const collapseGlyph = 'm14 18-6-6 6-6m6 12-6-6 6-6';
+    const expandGlyph = 'm10 18 6-6-6-6M4 18l6-6-6-6';
+
+    function setSidebarCollapsed(collapsed) {
+        document.body.classList.toggle('sidebar-collapsed', collapsed);
+        if (sidebarCollapse) {
+            const label = collapsed ? 'Expand navigation sidebar' : 'Collapse navigation sidebar';
+            sidebarCollapse.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            sidebarCollapse.setAttribute('aria-label', label);
+            sidebarCollapse.setAttribute('title', label);
+        }
+        if (sidebarCollapseGlyph) {
+            sidebarCollapseGlyph.setAttribute('d', collapsed ? expandGlyph : collapseGlyph);
+        }
+    }
+
+    if (sidebarCollapse) {
+        setSidebarCollapsed(localStorage.getItem('ahp_sidebar_collapsed') === 'true');
+        sidebarCollapse.addEventListener('click', function () {
+            const collapsed = !document.body.classList.contains('sidebar-collapsed');
+            setSidebarCollapsed(collapsed);
+            localStorage.setItem('ahp_sidebar_collapsed', collapsed ? 'true' : 'false');
+        });
+    }
+
     // ── Autofocus ──────────────────────────────────────────────────
     const target = document.querySelector('[data-autofocus]');
     if (target) target.focus();
@@ -118,6 +148,195 @@ document.addEventListener('DOMContentLoaded', function () {
     if (printButton) {
         printButton.addEventListener('click', function () {
             window.print();
+        });
+    }
+
+    // ── Live notifications ────────────────────────────────────────
+    const notificationCenter = document.querySelector('[data-notification-center]');
+    if (notificationCenter) {
+        const notificationToggle = notificationCenter.querySelector('[data-notification-toggle]');
+        const notificationPanel = notificationCenter.querySelector('[data-notification-panel]');
+        const notificationCount = notificationCenter.querySelector('[data-notification-count]');
+        const notificationList = notificationCenter.querySelector('[data-notification-list]');
+        const notificationEmpty = notificationCenter.querySelector('[data-notification-empty]');
+        const notificationStatus = notificationCenter.querySelector('[data-notification-status]');
+        const markNotificationsRead = notificationCenter.querySelector('[data-notification-read]');
+        const notificationUrl = notificationCenter.dataset.notificationsUrl;
+        const storageKey = 'ahp_read_notifications_' + notificationCenter.dataset.notificationUser;
+        let currentNotifications = [];
+        let knownNotificationIds = null;
+        let readNotificationIds = new Set();
+
+        try {
+            const storedIds = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            if (Array.isArray(storedIds)) {
+                readNotificationIds = new Set(storedIds.filter(function (id) {
+                    return typeof id === 'string';
+                }));
+            }
+        } catch (error) {
+            console.error('Could not read notification state.', error);
+        }
+
+        function saveReadNotificationIds() {
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(Array.from(readNotificationIds)));
+            } catch (error) {
+                console.error('Could not save notification state.', error);
+                if (notificationStatus) notificationStatus.textContent = 'Could not save read status.';
+            }
+        }
+
+        function updateNotificationList(checkedAt) {
+            if (!notificationList) return;
+            notificationList.replaceChildren();
+
+            const activeIds = new Set(currentNotifications.map(function (item) { return item.id; }));
+            readNotificationIds = new Set(Array.from(readNotificationIds).filter(function (id) {
+                return activeIds.has(id);
+            }));
+            saveReadNotificationIds();
+
+            let unreadCount = 0;
+            currentNotifications.forEach(function (item) {
+                const isUnread = !readNotificationIds.has(item.id);
+                if (isUnread) unreadCount += 1;
+
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                const dot = document.createElement('span');
+                const copy = document.createElement('span');
+                const title = document.createElement('strong');
+                const message = document.createElement('span');
+                link.className = 'notification-item' + (isUnread ? ' is-unread' : '');
+                link.href = item.url;
+                link.setAttribute('aria-label', item.title + '. ' + item.message);
+                dot.className = 'notification-dot';
+                title.textContent = item.title;
+                message.textContent = item.message;
+                copy.append(title, message);
+                link.append(dot, copy);
+                link.addEventListener('click', function () {
+                    readNotificationIds.add(item.id);
+                    saveReadNotificationIds();
+                    updateNotificationList();
+                });
+                listItem.appendChild(link);
+                notificationList.appendChild(listItem);
+            });
+
+            if (notificationCount) {
+                notificationCount.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+                notificationCount.hidden = unreadCount === 0;
+            }
+            if (notificationToggle) {
+                notificationToggle.setAttribute(
+                    'aria-label',
+                    unreadCount > 0 ? 'Open notifications, ' + unreadCount + ' unread' : 'Open notifications'
+                );
+            }
+            if (notificationEmpty) notificationEmpty.hidden = currentNotifications.length > 0;
+            if (notificationStatus && checkedAt) {
+                notificationStatus.textContent = 'Updated ' + new Date(checkedAt).toLocaleTimeString();
+            }
+        }
+
+        function showNotificationToast(item) {
+            const toast = document.createElement('div');
+            const title = document.createElement('strong');
+            const message = document.createElement('span');
+            toast.className = 'notification-toast';
+            toast.setAttribute('role', 'status');
+            title.textContent = item.title;
+            message.textContent = item.message;
+            toast.append(title, message);
+            document.body.appendChild(toast);
+            window.setTimeout(function () { toast.remove(); }, 6500);
+        }
+
+        function markAllNotificationsRead() {
+            currentNotifications.forEach(function (item) {
+                readNotificationIds.add(item.id);
+            });
+            saveReadNotificationIds();
+            updateNotificationList();
+        }
+
+        async function refreshNotifications() {
+            try {
+                const response = await fetch(notificationUrl, {
+                    method: 'GET',
+                    headers: { Accept: 'application/json' },
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                });
+                if (!response.ok) throw new Error('Notification request failed with status ' + response.status);
+
+                const payload = await response.json();
+                if (!Array.isArray(payload.notifications)) throw new Error('Notification response is invalid.');
+
+                const nextNotifications = payload.notifications.filter(function (item) {
+                    return item && typeof item.id === 'string'
+                        && typeof item.title === 'string'
+                        && typeof item.message === 'string'
+                        && typeof item.url === 'string';
+                });
+                const nextIds = new Set(nextNotifications.map(function (item) { return item.id; }));
+                const newNotifications = knownNotificationIds === null
+                    ? []
+                    : nextNotifications.filter(function (item) {
+                        return !knownNotificationIds.has(item.id) && !readNotificationIds.has(item.id);
+                    });
+
+                currentNotifications = nextNotifications;
+                knownNotificationIds = nextIds;
+                updateNotificationList(payload.checked_at);
+
+                newNotifications.slice(0, 3).forEach(showNotificationToast);
+                if (newNotifications.length > 3) {
+                    showNotificationToast({
+                        title: 'More notifications',
+                        message: (newNotifications.length - 3) + ' additional updates are available.',
+                    });
+                }
+            } catch (error) {
+                console.error('Could not refresh notifications.', error);
+                if (notificationStatus) notificationStatus.textContent = 'Notifications are temporarily unavailable.';
+            }
+        }
+
+        if (notificationToggle && notificationPanel) {
+            notificationToggle.addEventListener('click', function () {
+                const open = notificationPanel.hidden;
+                notificationPanel.hidden = !open;
+                notificationToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                if (open) markAllNotificationsRead();
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!notificationCenter.contains(event.target)) {
+                    notificationPanel.hidden = true;
+                    notificationToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && !notificationPanel.hidden) {
+                    notificationPanel.hidden = true;
+                    notificationToggle.setAttribute('aria-expanded', 'false');
+                    notificationToggle.focus();
+                }
+            });
+        }
+
+        if (markNotificationsRead) {
+            markNotificationsRead.addEventListener('click', markAllNotificationsRead);
+        }
+
+        refreshNotifications();
+        window.setInterval(refreshNotifications, 15000);
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) refreshNotifications();
         });
     }
 
