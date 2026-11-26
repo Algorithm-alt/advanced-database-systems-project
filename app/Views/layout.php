@@ -6,6 +6,14 @@ use App\Core\View;
 
 $authUser = Auth::user();
 $currentRoute = Request::route();
+$accountInitials = '';
+if ($authUser !== null) {
+    $nameParts = preg_split('/\s+/', trim((string)($authUser['full_name'] ?? '')), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    $accountInitials = strtoupper(substr($nameParts[0] ?? 'U', 0, 1));
+    if (count($nameParts) > 1) {
+        $accountInitials .= strtoupper(substr($nameParts[count($nameParts) - 1], 0, 1));
+    }
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -84,16 +92,93 @@ $currentRoute = Request::route();
                 <span class="theme-label" data-theme-label>Dark</span>
             </button>
             <?php if ($authUser !== null): ?>
-                <span class="role-pill" title="Active role: <?= View::e($authUser['role']) ?>"><?= View::e($authUser['role']) ?></span>
-                <a class="btn btn-ghost btn-sm btn-signout" href="<?= View::e(Request::url('logout')) ?>"
-                   data-tooltip="End your current session" title="End your current session">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                        <polyline points="16 17 21 12 16 7"/>
-                        <line x1="21" y1="12" x2="9" y2="12"/>
-                    </svg>
-                    <span>Sign out</span>
-                </a>
+                <div class="account-menu" data-account-menu>
+                    <button type="button" class="account-toggle" data-account-toggle
+                            aria-controls="account-menu-panel" aria-expanded="false"
+                            aria-label="Open account menu for <?= View::e($authUser['full_name']) ?>"
+                            data-account-label="<?= View::e('account menu for ' . $authUser['full_name']) ?>"
+                            title="Account options">
+                        <span class="account-avatar" aria-hidden="true"><?= View::e($accountInitials) ?></span>
+                        <span class="account-toggle-copy">
+                            <strong><?= View::e($authUser['full_name']) ?></strong>
+                            <small><?= View::e($authUser['role']) ?></small>
+                        </span>
+                        <svg class="account-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <path d="m6 9 6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <section class="account-panel" id="account-menu-panel" data-account-panel
+                             role="region" aria-label="Account menu" hidden>
+                        <div class="account-panel-heading">
+                            <span class="account-avatar account-avatar-large" aria-hidden="true"><?= View::e($accountInitials) ?></span>
+                            <span>
+                                <strong><?= View::e($authUser['full_name']) ?></strong>
+                                <small><?= View::e($authUser['username']) ?> · <?= View::e($authUser['role']) ?></small>
+                            </span>
+                        </div>
+                        <nav class="account-panel-links" aria-label="Quick links">
+                            <a href="<?= View::e(Request::url('dashboard')) ?>">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/>
+                                    <rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/>
+                                </svg>
+                                <span>Dashboard</span>
+                            </a>
+                            <?php if (Auth::hasRole('Administrator', 'Manager', 'Employee')): ?>
+                                <a href="<?= View::e(Request::url('pos')) ?>">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M3 3h2l2.4 11.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 7H6"/>
+                                        <circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
+                                    </svg>
+                                    <span>Point of Sale</span>
+                                </a>
+                                <a href="<?= View::e(Request::url('admin/records&section=' . (Auth::hasRole('Administrator', 'Manager') ? 'suppliers' : 'customers'))) ?>">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M3 7 12 3l9 4-9 4-9-4Z"/><path d="M3 12l9 4 9-4M3 17l9 4 9-4"/>
+                                    </svg>
+                                    <span>Business Records</span>
+                                </a>
+                                <?php if (Auth::hasRole('Administrator', 'Manager')): ?>
+                                    <a href="<?= View::e(Request::url('reports')) ?>">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/>
+                                        </svg>
+                                        <span>Sales Reports</span>
+                                    </a>
+                                <?php endif; ?>
+                                <?php if (Auth::hasRole('Administrator')): ?>
+                                    <a href="<?= View::e(Request::url('admin/users')) ?>">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <circle cx="9" cy="8" r="4"/><path d="M3 21v-2a6 6 0 0 1 12 0v2"/>
+                                            <path d="M16 4.5a4 4 0 0 1 0 7.5M21 21v-2a6 6 0 0 0-4-5.7"/>
+                                        </svg>
+                                        <span>Users &amp; Roles</span>
+                                    </a>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <a href="<?= View::e(Request::url('catalog')) ?>">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M20 13 13 20 3 10V3h7l10 10Z"/><circle cx="7.5" cy="7.5" r=".5"/>
+                                    </svg>
+                                    <span>Product Catalog</span>
+                                </a>
+                                <a href="<?= View::e(Request::url('my-sales')) ?>">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M4 3h16v18l-3-2-3 2-4-2-3 2-3-2V3Z"/><path d="M8 8h8M8 12h8M8 16h4"/>
+                                    </svg>
+                                    <span>My Purchases</span>
+                                </a>
+                            <?php endif; ?>
+                        </nav>
+                        <a class="account-signout" href="<?= View::e(Request::url('logout')) ?>">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <path d="m16 17 5-5-5-5M21 12H9"/>
+                            </svg>
+                            <span>Sign out</span>
+                        </a>
+                    </section>
+                </div>
             <?php endif; ?>
         </div>
     </div>

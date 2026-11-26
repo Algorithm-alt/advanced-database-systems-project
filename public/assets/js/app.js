@@ -36,6 +36,39 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const accountMenu = document.querySelector('[data-account-menu]');
+    if (accountMenu) {
+        const accountToggle = accountMenu.querySelector('[data-account-toggle]');
+        const accountPanel = accountMenu.querySelector('[data-account-panel]');
+
+        function setAccountMenuOpen(open, restoreFocus) {
+            if (!accountToggle || !accountPanel) return;
+            accountPanel.hidden = !open;
+            accountToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            const label = accountToggle.getAttribute('data-account-label') || 'account menu';
+            accountToggle.setAttribute('aria-label', (open ? 'Close ' : 'Open ') + label);
+            if (restoreFocus) accountToggle.focus();
+        }
+
+        if (accountToggle && accountPanel) {
+            accountToggle.addEventListener('click', function () {
+                setAccountMenuOpen(accountPanel.hidden, false);
+            });
+
+            accountMenu.addEventListener('focusout', function (event) {
+                if (!accountMenu.contains(event.relatedTarget)) setAccountMenuOpen(false, false);
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!accountMenu.contains(event.target)) setAccountMenuOpen(false, false);
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && !accountPanel.hidden) setAccountMenuOpen(false, true);
+            });
+        }
+    }
+
     const sidebarToggle   = document.querySelector('[data-sidebar-toggle]');
     const sidebarBackdrop = document.querySelector('[data-sidebar-backdrop]');
 

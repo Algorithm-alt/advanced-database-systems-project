@@ -603,7 +603,8 @@ code {
     box-shadow: 0 0 18px var(--brand-glow);
 }
 .auth-orbit::before { top: 18%; left: 12%; }
-.auth-orbit::after { right: 16%; bottom: 10%; width: 6px; height: 6px; background: var(--accent); }
+.auth-orbit::after { right: 16%; bottom: 10%; width: 6px; height: 6px; background: var(--accent); animation: login-twinkle 4.8s ease-in-out infinite 1.1s; }
+.auth-orbit::before { animation: login-twinkle 4.2s ease-in-out infinite; }
 .auth-glow {
     position: absolute;
     display: block;
@@ -631,6 +632,10 @@ code {
 @keyframes login-drift {
     from { transform: translate3d(-12px, 8px, 0) scale(.96); }
     to { transform: translate3d(16px, -14px, 0) scale(1.04); }
+}
+@keyframes login-twinkle {
+    0%, 100% { opacity: .58; transform: scale(.78); }
+    50% { opacity: 1; transform: scale(1.3); }
 }
 
 .auth-aside {
@@ -768,7 +773,9 @@ code {
 
 @media (prefers-reduced-motion: reduce) {
     .auth-orbit,
-    .auth-glow {
+    .auth-glow,
+    .auth-orbit::before,
+    .auth-orbit::after {
         animation: none;
     }
 }
@@ -1235,6 +1242,155 @@ td.number, th.number {
     display: flex;
     align-items: center;
     gap: 12px;
+}
+
+.account-menu {
+    position: relative;
+    flex-shrink: 0;
+}
+.account-toggle {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 42px;
+    max-width: 230px;
+    padding: 4px 11px 4px 5px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.account-toggle:hover,
+.account-toggle[aria-expanded="true"] {
+    border-color: var(--line-dark);
+    background: var(--surface-2);
+}
+.account-toggle:focus-visible {
+    outline: 3px solid var(--brand-glow);
+    outline-offset: 2px;
+}
+.account-avatar {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 50%;
+    background: linear-gradient(145deg, var(--brand), var(--brand-dark));
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .03em;
+}
+[data-theme="dark"] .account-avatar { color: #042f2e; }
+.account-toggle-copy {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+    text-align: left;
+    line-height: 1.15;
+}
+.account-toggle-copy strong {
+    overflow: hidden;
+    color: var(--ink);
+    font-size: 11px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.account-toggle-copy small {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 600;
+}
+.account-chevron {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 auto;
+    color: var(--muted);
+    transition: transform var(--transition-fast);
+}
+.account-toggle[aria-expanded="true"] .account-chevron { transform: rotate(180deg); }
+.account-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 500;
+    width: min(320px, calc(100vw - 24px));
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+}
+.account-panel[hidden] { display: none; }
+.account-panel-heading {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 7px 8px 14px;
+    border-bottom: 1px solid var(--line);
+}
+.account-avatar-large { width: 40px; height: 40px; font-size: 13px; }
+.account-panel-heading > span:last-child {
+    display: grid;
+    min-width: 0;
+    gap: 3px;
+}
+.account-panel-heading strong {
+    overflow: hidden;
+    color: var(--ink);
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.account-panel-heading small {
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.account-panel-links {
+    display: grid;
+    gap: 3px;
+    padding: 9px 0;
+}
+.account-panel-links a,
+.account-signout {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 38px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    color: var(--ink-soft);
+    font-size: 13px;
+    font-weight: 600;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+.account-panel-links a:hover {
+    background: var(--surface-2);
+    color: var(--brand-dark);
+}
+.account-panel-links svg,
+.account-signout svg {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 auto;
+}
+.account-signout {
+    min-height: 40px;
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    color: var(--danger);
+}
+.account-signout:hover {
+    background: var(--danger-light);
+    color: var(--danger-dark);
 }
 
 .icon-btn {
@@ -1717,9 +1873,9 @@ td.number, th.number {
         padding-inline: 16px;
     }
 
-    .header-actions .role-pill {
-        display: none;
-    }
+    .account-toggle-copy { display: none; }
+    .account-toggle { width: 40px; height: 40px; justify-content: center; padding: 3px; }
+    .account-chevron { display: none; }
 }
 
 @media (max-width: 640px) {
@@ -1728,9 +1884,12 @@ td.number, th.number {
         gap: 8px;
     }
 
+    .header-left { gap: 7px; }
+    .header-actions { gap: 5px; }
+    .brand { gap: 7px; }
     .brand-text strong {
         font-size: 13.5px;
-        max-width: 155px;
+        max-width: 108px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -1740,6 +1899,9 @@ td.number, th.number {
         display: none;
     }
 
+    .account-toggle { width: 36px; height: 36px; }
+    .account-avatar { width: 29px; height: 29px; }
+
     .dashboard-hero {
         min-height: 0;
         padding: 27px 23px;
@@ -1747,10 +1909,6 @@ td.number, th.number {
     .dashboard-hero-copy { width: 100%; }
     .dashboard-hero-art { display: none; }
     .dashboard-hero-copy > p:not(.eyebrow) { font-size: 14px; }
-
-    .has-sidebar .header-actions .btn-signout {
-        display: none;
-    }
 
     .page-heading {
         margin-bottom: 18px;
@@ -1861,6 +2019,12 @@ td.number, th.number {
     body.sidebar-open .sidebar-backdrop {
         inset: 59px 0 0;
     }
+}
+
+@media (max-width: 380px) {
+    .header-inner { gap: 4px; }
+    .header-actions { gap: 4px; }
+    .brand-text strong { max-width: 68px; }
 }
 
 [data-tooltip] {
