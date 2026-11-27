@@ -29,12 +29,12 @@ final class Request
 
     public static function route(): string
     {
-        $route = self::input('route', 'login');
-        $route = is_string($route) ? strtolower(trim($route, "/ \t\n\r\0\x0B")) : 'login';
+        $route = self::input('route', 'home');
+        $route = is_string($route) ? strtolower(trim($route, "/ \t\n\r\0\x0B")) : 'home';
         if (!preg_match('/^[a-z0-9\/-]*$/', $route)) {
             return '404';
         }
-        return $route !== '' ? $route : 'login';
+        return $route !== '' ? $route : 'home';
     }
 
     public static function ip(): string

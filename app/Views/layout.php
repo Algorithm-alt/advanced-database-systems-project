@@ -28,7 +28,7 @@ if ($authUser !== null) {
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="<?= View::e(Request::asset('css/app.css')) ?>">
 </head>
-<body class="<?= $authUser !== null ? 'has-sidebar' : ($currentRoute === 'login' ? 'auth-page' : '') ?>">
+<body class="<?= $authUser !== null ? 'has-sidebar' : ($currentRoute === 'login' ? 'auth-page' : ($currentRoute === 'home' ? 'landing-page' : '')) ?>">
 <header class="site-header">
     <div class="header-inner <?= $authUser !== null ? 'header-fluid' : 'shell' ?>">
         <div class="header-left">
@@ -41,8 +41,8 @@ if ($authUser !== null) {
                     </svg>
                 </button>
             <?php endif; ?>
-            <a class="brand" href="<?= View::e(Request::url($authUser !== null ? 'dashboard' : 'login')) ?>"
-               title="Go to <?= $authUser !== null ? 'dashboard' : 'sign in' ?>"
+            <a class="brand" href="<?= View::e(Request::url($authUser !== null ? 'dashboard' : 'home')) ?>"
+               title="Go to <?= $authUser !== null ? 'dashboard' : 'home' ?>"
                aria-label="Algorithm Hardware Plug">
                 <img class="brand-mark" src="<?= View::e(Request::asset('images/site-logo.svg')) ?>" alt="" width="42" height="42">
                 <span class="brand-text">

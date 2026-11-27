@@ -8,6 +8,7 @@ use App\Controllers\AdminController;
 use App\Controllers\AuthController;
 use App\Controllers\CustomerController;
 use App\Controllers\HealthController;
+use App\Controllers\HomeController;
 use App\Controllers\InventoryController;
 use App\Controllers\NotificationsController;
 use App\Controllers\PosController;
@@ -19,6 +20,7 @@ final class Router
     public static function dispatch(string $route): void
     {
         match ($route) {
+            'home' => HomeController::index(),
             'login' => Request::isPost() ? AuthController::login() : AuthController::showLogin(),
             'logout' => AuthController::showLogout(),
             'logout/request' => AuthController::requestLogout(),
