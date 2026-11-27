@@ -1115,7 +1115,10 @@ td.number, th.number {
 
 .narrow-page {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     place-items: start center;
+    width: 100%;
+    min-width: 0;
 }
 .narrow-page .panel {
     width: min(640px, 100%);
@@ -2086,6 +2089,12 @@ td.number, th.number {
     .header-actions { gap: 4px; }
     .brand { gap: 5px; }
     .brand-text strong { max-width: 80px; }
+    .notification-panel {
+        position: fixed;
+        top: 68px;
+        right: 16px;
+        width: min(390px, calc(100vw - 32px));
+    }
 }
 
 @media (max-width: 380px) {
