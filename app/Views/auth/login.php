@@ -6,6 +6,12 @@ use App\Core\View;
 ?>
 <section class="auth-grid">
     <div class="auth-card">
+        <a class="auth-back-link" href="<?= View::e(Request::url('home')) ?>">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M19 12H5m7 7-7-7 7-7"/>
+            </svg>
+            <span>Back to home</span>
+        </a>
         <div class="auth-kicker">
             <span class="auth-kicker-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
