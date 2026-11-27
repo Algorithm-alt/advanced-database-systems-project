@@ -9,6 +9,9 @@ use App\Core\View;
         <h1>Business records</h1>
         <p class="muted">Manage suppliers, customers and employees.</p>
     </div>
+    <div class="actions">
+        <?php $exportFilename = 'business-records-' . $section . '.csv'; require APP_ROOT . '/app/Views/components/export_actions.php'; ?>
+    </div>
 </section>
 
 <nav class="actions mb-24" aria-label="Business record types">

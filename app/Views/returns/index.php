@@ -8,7 +8,10 @@ use App\Core\View;
         <h1>Returns</h1>
         <p class="muted">Approved returns and refund history.</p>
     </div>
-    <a class="btn btn-primary" href="<?= View::e(Request::url('returns/create')) ?>">Process return</a>
+    <div class="actions">
+        <?php $exportFilename = 'returns.csv'; require APP_ROOT . '/app/Views/components/export_actions.php'; ?>
+        <a class="btn btn-primary" href="<?= View::e(Request::url('returns/create')) ?>">Process return</a>
+    </div>
 </section>
 
 <form method="get" action="<?= View::e(Request::url('returns')) ?>" class="toolbar">

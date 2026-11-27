@@ -18,7 +18,10 @@ $actionColors = [
         <h1>Audit trail</h1>
         <p class="muted">Administrative view of authentication, approvals and business actions.</p>
     </div>
-    <a class="btn btn-ghost" href="<?= View::e(Request::url('reports')) ?>">Sales report</a>
+    <div class="actions">
+        <?php $exportFilename = 'audit-trail.csv'; require APP_ROOT . '/app/Views/components/export_actions.php'; ?>
+        <a class="btn btn-ghost" href="<?= View::e(Request::url('reports')) ?>">Sales report</a>
+    </div>
 </section>
 
 <form method="get" action="<?= View::e(Request::url('reports/audit')) ?>" class="toolbar">

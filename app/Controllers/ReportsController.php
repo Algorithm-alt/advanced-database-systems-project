@@ -33,9 +33,13 @@ final class ReportsController
             fputcsv($handle, ['Sale Number', 'Date', 'Customer', 'Employee', 'Subtotal', 'Discount', 'Tax', 'Total', 'Paid', 'Status']);
             foreach ($rows as $row) {
                 fputcsv($handle, [
-                    $row['SaleNumber'], $row['SaleDate'], $row['CustomerName'], $row['EmployeeName'],
+                    self::safeCsvText((string)$row['SaleNumber']),
+                    self::safeCsvText((string)$row['SaleDate']),
+                    self::safeCsvText((string)($row['CustomerName'] ?? '')),
+                    self::safeCsvText((string)$row['EmployeeName']),
                     $row['SubTotal'], $row['DiscountAmount'], $row['TaxAmount'],
-                    $row['TotalAmount'], $row['AmountPaid'], $row['Status'],
+                    $row['TotalAmount'], $row['AmountPaid'],
+                    self::safeCsvText((string)$row['Status']),
                 ]);
             }
             fclose($handle);
@@ -73,5 +77,10 @@ final class ReportsController
             'userId' => $userId,
             'users' => BusinessData::allUsers(),
         ]);
+    }
+
+    private static function safeCsvText(string $value): string
+    {
+        return preg_match('/^[\t\r ]*[=+\-@]/', $value) === 1 ? "'" . $value : $value;
     }
 }

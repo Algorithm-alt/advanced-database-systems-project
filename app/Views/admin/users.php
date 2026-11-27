@@ -10,6 +10,7 @@ use App\Core\View;
         <p class="muted">Role changes are protected by a two-factor critical-action approval flow.</p>
     </div>
     <div class="actions">
+        <?php $exportFilename = 'users-and-roles.csv'; require APP_ROOT . '/app/Views/components/export_actions.php'; ?>
         <span class="badge badge-info"><?= count($users) ?> user<?= count($users) !== 1 ? 's' : '' ?></span>
     </div>
 </section>
@@ -23,7 +24,7 @@ use App\Core\View;
             <th>Email</th>
             <th>Current roles</th>
             <th>Status</th>
-            <th>Change role</th>
+            <th data-export-ignore>Change role</th>
         </tr>
         </thead>
         <tbody>

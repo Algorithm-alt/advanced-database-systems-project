@@ -8,6 +8,9 @@ use App\Core\View;
         <h1>Product catalog</h1>
         <p class="muted">Browse active hardware products, prices, and real-time availability.</p>
     </div>
+    <div class="actions">
+        <?php $exportFilename = 'product-catalog.csv'; require APP_ROOT . '/app/Views/components/export_actions.php'; ?>
+    </div>
 </section>
 
 <form method="get" action="<?= View::e(Request::url('catalog')) ?>" class="toolbar">

@@ -1598,16 +1598,26 @@ td.number, th.number {
     .landing-cta { align-items: flex-start; flex-direction: column; padding: 22px; }
 }
 
+@page {
+    margin: 12mm;
+}
+
 @media print {
     .site-header, .site-footer, .sidebar, .sidebar-backdrop, .actions, .toolbar, form { display: none !important; }
+    .notice-stack { display: none !important; }
     .app-shell { display: block; }
-    .page-with-sidebar { padding: 0; max-width: none; }
+    .shell, .page-with-sidebar { width: 100%; max-width: none; padding: 0; }
     .panel { box-shadow: none; border: 1px solid #ddd; }
     .report-charts { break-inside: avoid; }
     .report-invoice-link { display: none !important; }
-    .table-wrap { overflow: visible; }
-    table { min-width: 0; }
-    body { background: white; color: #0f172a; }
+    .table-wrap { overflow: visible !important; border: 0; border-radius: 0; box-shadow: none; }
+    table { width: 100%; min-width: 0; }
+    thead { display: table-header-group; }
+    tr, .panel, .kpi-card { break-inside: avoid; page-break-inside: avoid; }
+    th, td { padding: 6px; font-size: 9pt; white-space: normal !important; overflow-wrap: anywhere; }
+    .narrow-page { display: block; }
+    .narrow-page .panel { width: 100%; max-width: none; padding: 0; }
+    body { background: #fff !important; color: #0f172a !important; }
 }
 
 .header-fluid {

@@ -10,6 +10,7 @@ use App\Core\View;
         <p class="muted">Current catalogue and stock position across all active products.</p>
     </div>
     <div class="actions">
+        <?php $exportFilename = 'inventory.csv'; require APP_ROOT . '/app/Views/components/export_actions.php'; ?>
         <a class="btn btn-ghost" href="<?= View::e(Request::url('inventory/transactions')) ?>">Stock movements</a>
         <?php if (Auth::hasRole('Administrator', 'Manager')): ?>
             <a class="btn btn-ghost" href="<?= View::e(Request::url('inventory/create')) ?>">+ Register product</a>

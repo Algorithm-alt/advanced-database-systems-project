@@ -70,7 +70,12 @@ $documentType = $documentType ?? 'Receipt';
         </div>
 
         <div class="actions form-footer">
-            <button type="button" class="btn btn-primary" data-print>Print <?= View::e(strtolower($documentType)) ?></button>
+            <?php
+            $exportFilename = 'sale-items-' . (string)$sale['SaleNumber'] . '.csv';
+            $exportCsvLabel = 'Export line items CSV';
+            $exportPrintClass = 'btn-primary';
+            require APP_ROOT . '/app/Views/components/export_actions.php';
+            ?>
             <?php if ($documentType === 'Invoice'): ?>
                 <a class="btn btn-ghost" href="<?= View::e(Request::url('pos/receipt&sale_id=' . (int)$sale['SaleID'])) ?>">View receipt</a>
             <?php elseif ((string)$sale['Status'] === 'COMPLETED'): ?>

@@ -10,7 +10,8 @@ use App\Core\View;
         <p class="muted">Sales from <?= View::e($from) ?> through <?= View::e($to) ?> using the selected filters.</p>
     </div>
     <div class="actions">
-        <button type="button" class="btn btn-ghost" data-print>Print report</button>
+        <button type="button" class="btn btn-ghost" data-print
+                title="Open the print dialog; choose Save as PDF to download a PDF">Print / Save as PDF</button>
         <?php if (Auth::hasRole('Administrator')): ?>
             <a class="btn btn-ghost" href="<?= View::e(Request::url('reports/audit')) ?>">Audit trail</a>
         <?php endif; ?>
@@ -175,7 +176,7 @@ $customerSales = array_slice($customerSales, 0, 5, true);
             <th class="number">Tax</th>
             <th class="number">Total</th>
             <th>Status</th>
-            <th>Invoice</th>
+            <th data-export-ignore>Invoice</th>
         </tr>
         </thead>
         <tbody>

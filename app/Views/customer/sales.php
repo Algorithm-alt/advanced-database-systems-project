@@ -15,7 +15,10 @@ use App\Core\View;
             <?php endif; ?>
         </p>
     </div>
-    <a class="btn btn-ghost" href="<?= View::e(Request::url('catalog')) ?>">Browse catalog</a>
+    <div class="actions">
+        <?php $exportFilename = 'my-purchases.csv'; require APP_ROOT . '/app/Views/components/export_actions.php'; ?>
+        <a class="btn btn-ghost" href="<?= View::e(Request::url('catalog')) ?>">Browse catalog</a>
+    </div>
 </section>
 
 <div class="table-wrap">

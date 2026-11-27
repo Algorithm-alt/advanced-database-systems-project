@@ -15,7 +15,10 @@ $typeColors = [
         <h1>Stock movements</h1>
         <p class="muted">Every sale, return and manual adjustment is recorded here.</p>
     </div>
-    <a class="btn btn-ghost" href="<?= View::e(Request::url('inventory')) ?>">Back to inventory</a>
+    <div class="actions">
+        <?php $exportFilename = 'stock-movements.csv'; require APP_ROOT . '/app/Views/components/export_actions.php'; ?>
+        <a class="btn btn-ghost" href="<?= View::e(Request::url('inventory')) ?>">Back to inventory</a>
+    </div>
 </section>
 
 <form method="get" action="<?= View::e(Request::url('inventory/transactions')) ?>" class="toolbar">
