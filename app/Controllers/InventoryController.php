@@ -22,10 +22,11 @@ final class InventoryController
         Auth::requireRole('Administrator', 'Manager', 'Employee');
         $search = (string)Request::input('search', '');
         $lowStock = (string)Request::input('low_stock', '') === '1';
+        $rows = BusinessData::inventoryAll($search, $lowStock);
 
         View::render('inventory/index', [
             'title' => 'Inventory - Algorithm Hardware Plug',
-            'rows' => BusinessData::inventory($search, $lowStock),
+            'rows' => $rows,
             'search' => $search,
             'lowStock' => $lowStock,
         ]);
@@ -78,6 +79,123 @@ final class InventoryController
             Response::redirect(Request::url('inventory/create'));
         }
     }
+
+    public static function edit(): void
+    {
+        Auth::requireRole('Administrator', 'Manager');
+        $productId = (int)Request::input('product_id', 0);
+        $product = $productId > 0 ? BusinessData::product($productId) : null;
+        if ($product === null) {
+            Session::flash('error', 'Product not found.');
+            Response::redirect(Request::url('inventory'));
+        }
+
+        View::render('inventory/edit', [
+            'title' => 'Edit product - Algorithm Hardware Plug',
+            'product' => $product,
+            'categories' => BusinessData::categories(),
+            'suppliers' => BusinessData::suppliers(),
+        ]);
+    }
+
+    public static function update(): void
+    {
+        Auth::requireRole('Administrator', 'Manager');
+        Security::assertCsrf();
+
+        $productId = (int)Request::input('product_id', 0);
+        $sku = trim((string)Request::input('sku', ''));
+        $productName = trim((string)Request::input('product_name', ''));
+        $categoryId = (int)Request::input('category_id', 0);
+        $supplierId = (int)Request::input('supplier_id', 0);
+        $unitPrice = (float)Request::input('unit_price', -1);
+        $costPrice = (float)Request::input('cost_price', -1);
+        $reorderLevel = (int)Request::input('reorder_level', -1);
+        $barcode = trim((string)Request::input('barcode', ''));
+
+        if ($productId <= 0 || $sku === '' || $productName === '' || $categoryId <= 0
+            || $supplierId <= 0 || $unitPrice < 0 || $costPrice < 0 || $reorderLevel < 0) {
+            Session::flash('error', 'Complete all product fields with valid values.');
+            Response::redirect(Request::url('inventory/edit&product_id=' . $productId));
+        }
+
+        try {
+            BusinessData::updateProduct(
+                $productId,
+                $sku,
+                $productName,
+                $categoryId,
+                $supplierId,
+                $unitPrice,
+                $costPrice,
+                $reorderLevel,
+                $barcode
+            );
+            Session::flash('success', 'Product "' . $productName . '" updated.');
+        } catch (Throwable $exception) {
+            Session::flash('error', 'Could not update product: ' . $exception->getMessage());
+        }
+        Response::redirect(Request::url('inventory'));
+    }
+
+    public static function deactivate(): void
+    {
+        Auth::requireRole('Administrator', 'Manager');
+        Security::assertCsrf();
+        $productId = (int)Request::input('product_id', 0);
+
+        if ($productId <= 0) {
+            Session::flash('error', 'Invalid product.');
+            Response::redirect(Request::url('inventory'));
+        }
+
+        try {
+            BusinessData::deactivateProduct($productId);
+            Session::flash('success', 'Product deactivated.');
+        } catch (Throwable $exception) {
+            Session::flash('error', 'Could not deactivate product: ' . $exception->getMessage());
+        }
+        Response::redirect(Request::url('inventory'));
+    }
+
+    public static function activate(): void
+    {
+        Auth::requireRole('Administrator', 'Manager');
+        Security::assertCsrf();
+        $productId = (int)Request::input('product_id', 0);
+        if ($productId <= 0) {
+            Session::flash('error', 'Invalid product.');
+            Response::redirect(Request::url('inventory'));
+        }
+
+        try {
+            BusinessData::activateProduct($productId);
+            Session::flash('success', 'Product activated.');
+        } catch (Throwable $exception) {
+            Session::flash('error', 'Could not activate product: ' . $exception->getMessage());
+        }
+        Response::redirect(Request::url('inventory&status=inactive'));
+    }
+
+    public static function permanentlyDelete(): void
+    {
+        Auth::requireRole('Administrator', 'Manager');
+        Security::assertCsrf();
+        $productId = (int)Request::input('product_id', 0);
+        if ($productId <= 0) {
+            Session::flash('error', 'Invalid product.');
+            Response::redirect(Request::url('inventory&status=inactive'));
+        }
+
+        try {
+            BusinessData::permanentlyDeleteProduct($productId);
+            Session::flash('success', 'Product permanently deleted.');
+        } catch (Throwable $exception) {
+            Session::flash('error', 'Could not permanently delete product: ' . $exception->getMessage());
+        }
+        Response::redirect(Request::url('inventory&status=inactive'));
+    }
+
 
     public static function adjust(): void
     {

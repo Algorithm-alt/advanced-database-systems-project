@@ -1,13 +1,14 @@
 <?php
 use App\Core\Auth;
 use App\Core\Request;
+use App\Core\Session;
 use App\Core\View;
 ?>
 <section class="page-heading">
     <div>
         <p class="eyebrow">Stock control</p>
         <h1>Inventory</h1>
-        <p class="muted">Current catalogue and stock position across all active products.</p>
+        <p class="muted">Current catalogue and stock position with status and product actions.</p>
     </div>
     <div class="actions">
         <?php $exportFilename = 'inventory.csv'; require APP_ROOT . '/app/Views/components/export_actions.php'; ?>
@@ -39,7 +40,7 @@ use App\Core\View;
     <?php endif; ?>
 </form>
 
-<div class="table-wrap">
+<div class="table-wrap table-scroll">
     <table>
         <thead>
         <tr>
@@ -50,12 +51,15 @@ use App\Core\View;
             <th class="number">Reorder at</th>
             <th>Status</th>
             <th class="number">Unit price</th>
+            <?php if (Auth::hasRole('Administrator', 'Manager')): ?>
+                <th>Actions</th>
+            <?php endif; ?>
         </tr>
         </thead>
         <tbody>
         <?php if ($rows === []): ?>
             <tr>
-                <td colspan="7" class="table-empty">
+                <td colspan="<?= Auth::hasRole('Administrator', 'Manager') ? '8' : '7' ?>" class="table-empty">
                     <?= $search !== '' || $lowStock ? 'No products match this filter.' : 'No products found.' ?>
                 </td>
             </tr>
@@ -76,11 +80,43 @@ use App\Core\View;
                     </td>
                     <td class="number"><?= View::e($row['ReorderLevel']) ?></td>
                     <td>
-                        <span class="badge <?= $isLow ? 'badge-low' : 'badge-ok' ?>">
-                            <?= $isLow ? 'Low stock' : 'Healthy' ?>
-                        </span>
+                        <?php if ((int)($row['IsActive'] ?? 1) !== 1): ?>
+                            <span class="badge badge-danger">Inactive</span>
+                        <?php else: ?>
+                            <span class="badge <?= $isLow ? 'badge-low' : 'badge-ok' ?>">
+                                <?= $isLow ? 'Low stock' : 'Healthy' ?>
+                            </span>
+                        <?php endif; ?>
                     </td>
                     <td class="number"><strong>GH₵<?= number_format((float)$row['UnitPrice'], 2) ?></strong></td>
+                    <?php if (Auth::hasRole('Administrator', 'Manager')): ?>
+                        <td>
+                            <div class="actions">
+                                <a class="btn btn-ghost btn-sm"
+                                   href="<?= View::e(Request::url('inventory/edit&product_id=' . (int)$row['ProductID'])) ?>">Edit</a>
+                                <?php if ((int)($row['IsActive'] ?? 1) === 1): ?>
+                                    <form method="post" action="<?= View::e(Request::url('inventory/deactivate')) ?>"
+                                          data-confirm-deactivate="Deactivate this product?">
+                                        <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
+                                        <input type="hidden" name="product_id" value="<?= (int)$row['ProductID'] ?>">
+                                        <button type="submit" class="btn btn-danger btn-sm">Deactivate</button>
+                                    </form>
+                                <?php else: ?>
+                                    <form method="post" action="<?= View::e(Request::url('inventory/activate')) ?>">
+                                        <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
+                                        <input type="hidden" name="product_id" value="<?= (int)$row['ProductID'] ?>">
+                                        <button type="submit" class="btn btn-primary btn-sm">Activate</button>
+                                    </form>
+                                <?php endif; ?>
+                                <form method="post" action="<?= View::e(Request::url('inventory/permanently-delete')) ?>"
+                                      data-confirm-delete="Permanently delete this product? This cannot be undone.">
+                                    <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
+                                    <input type="hidden" name="product_id" value="<?= (int)$row['ProductID'] ?>">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete permanently</button>
+                                </form>
+                            </div>
+                        </td>
+                    <?php endif; ?>
                 </tr>
             <?php endforeach; ?>
         <?php endif; ?>

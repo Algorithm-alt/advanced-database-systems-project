@@ -34,12 +34,11 @@ final class AdminController
             $section = $defaultSection;
         }
         Auth::requireRole(...$sectionRoles[$section]['roles']);
-
         $records = ['suppliers' => [], 'customers' => [], 'employees' => []];
         $records[$section] = match ($section) {
-            'suppliers' => BusinessData::suppliers(),
-            'customers' => BusinessData::customers(),
-            'employees' => BusinessData::employees(),
+            'suppliers' => BusinessData::suppliersAll(),
+            'customers' => BusinessData::customersAll(),
+            'employees' => BusinessData::employeesAll(),
         };
 
         View::render('admin/records', [
@@ -143,6 +142,218 @@ final class AdminController
         Response::redirect(Request::url('admin/records&section=' . $section));
     }
 
+    public static function editRecord(): void
+    {
+        $section = (string)Request::input('section', '');
+        $sectionRoles = self::recordSections();
+        if (!isset($sectionRoles[$section])) {
+            Response::redirect(Request::url('admin/records'));
+        }
+        Auth::requireRole(...$sectionRoles[$section]['roles']);
+
+        $recordId = (int)Request::input('record_id', 0);
+        $record = null;
+        if ($section === 'suppliers') {
+            $record = $recordId > 0 ? BusinessData::supplier($recordId) : null;
+        } elseif ($section === 'customers') {
+            $record = $recordId > 0 ? BusinessData::customer($recordId) : null;
+        } else {
+            $record = $recordId > 0 ? BusinessData::employee($recordId) : null;
+        }
+
+        if ($record === null) {
+            Session::flash('error', 'Record not found.');
+            Response::redirect(Request::url('admin/records&section=' . $section));
+        }
+
+        View::render('admin/record_edit', [
+            'title' => 'Edit ' . rtrim($section, 's') . ' - Algorithm Hardware Plug',
+            'section' => $section,
+            'record' => $record,
+        ]);
+    }
+
+    public static function updateRecord(): void
+    {
+        Security::assertCsrf();
+        $section = (string)Request::input('section', '');
+        $sectionRoles = self::recordSections();
+        if (!isset($sectionRoles[$section])) {
+            Session::flash('error', 'Invalid business record type.');
+            Response::redirect(Request::url('admin/records'));
+        }
+        Auth::requireRole(...$sectionRoles[$section]['roles']);
+
+        $recordId = (int)Request::input('record_id', 0);
+        if ($recordId <= 0) {
+            Session::flash('error', 'Invalid business record.');
+            Response::redirect(Request::url('admin/records&section=' . $section));
+        }
+        $email = trim((string)Request::input('email', ''));
+
+        if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            Session::flash('error', 'Enter a valid email address.');
+            Response::redirect(Request::url('admin/records/edit&section=' . $section . '&record_id=' . $recordId));
+        }
+
+        try {
+            if ($section === 'suppliers') {
+                $companyName = trim((string)Request::input('company_name', ''));
+                if ($companyName === '' || strlen($companyName) > 100) {
+                    throw new \RuntimeException('Enter a valid supplier company name.');
+                }
+                BusinessData::updateSupplier(
+                    $recordId,
+                    $companyName,
+                    trim((string)Request::input('contact_name', '')) ?: null,
+                    trim((string)Request::input('phone', '')) ?: null,
+                    $email,
+                    trim((string)Request::input('address', '')) ?: null
+                );
+                Session::flash('success', 'Supplier updated.');
+            } elseif ($section === 'customers') {
+                $fullName = trim((string)Request::input('full_name', ''));
+                if ($fullName === '' || $email === '' || strlen($fullName) > 100) {
+                    throw new \RuntimeException('Enter the customer name and a valid email address.');
+                }
+                BusinessData::updateCustomer(
+                    $recordId,
+                    $fullName,
+                    $email,
+                    trim((string)Request::input('phone', '')) ?: null,
+                    trim((string)Request::input('address', '')) ?: null
+                );
+                Session::flash('success', 'Customer updated.');
+            } else {
+                $fullName = trim((string)Request::input('full_name', ''));
+                $position = trim((string)Request::input('position', ''));
+                $department = trim((string)Request::input('department', ''));
+                $phone = trim((string)Request::input('phone', ''));
+                $hireDate = (string)Request::input('hire_date', '');
+                $parsedHireDate = \DateTimeImmutable::createFromFormat('!Y-m-d', $hireDate);
+                if ($fullName === '' || $position === '' || $parsedHireDate === false
+                    || $parsedHireDate->format('Y-m-d') !== $hireDate
+                    || strlen($fullName) > 100 || strlen($position) > 50
+                    || strlen($department) > 50 || strlen($phone) > 30 || strlen($email) > 256) {
+                    throw new \RuntimeException('Enter a valid employee name, position, hire date and contact details.');
+                }
+                BusinessData::updateEmployee(
+                    $recordId,
+                    $fullName,
+                    $position,
+                    $department !== '' ? $department : null,
+                    $phone !== '' ? $phone : null,
+                    $email !== '' ? $email : null,
+                    $hireDate
+                );
+                Session::flash('success', 'Employee updated.');
+            }
+        } catch (Throwable $exception) {
+            Session::flash('error', 'Could not update record: ' . $exception->getMessage());
+        }
+
+        Response::redirect(Request::url('admin/records&section=' . $section));
+    }
+
+    public static function deactivateRecord(): void
+    {
+        Security::assertCsrf();
+        $section = (string)Request::input('section', '');
+        $sectionRoles = self::recordSections();
+        if (!isset($sectionRoles[$section])) {
+            Session::flash('error', 'Invalid business record type.');
+            Response::redirect(Request::url('admin/records'));
+        }
+        Auth::requireRole(...$sectionRoles[$section]['roles']);
+
+        $recordId = (int)Request::input('record_id', 0);
+        if ($recordId <= 0) {
+            Session::flash('error', 'Invalid business record.');
+            Response::redirect(Request::url('admin/records&section=' . $section));
+        }
+        try {
+            if ($section === 'suppliers') {
+                BusinessData::deactivateSupplier($recordId);
+                Session::flash('success', 'Supplier deactivated.');
+            } elseif ($section === 'customers') {
+                BusinessData::deactivateCustomer($recordId);
+                Session::flash('success', 'Customer deactivated.');
+            } else {
+                BusinessData::deactivateEmployee($recordId);
+                Session::flash('success', 'Employee deactivated.');
+            }
+        } catch (Throwable $exception) {
+            Session::flash('error', 'Could not deactivate record: ' . $exception->getMessage());
+        }
+        Response::redirect(Request::url('admin/records&section=' . $section));
+    }
+
+    public static function activateRecord(): void
+    {
+        Security::assertCsrf();
+        $section = (string)Request::input('section', '');
+        $sectionRoles = self::recordSections();
+        if (!isset($sectionRoles[$section])) {
+            Session::flash('error', 'Invalid business record type.');
+            Response::redirect(Request::url('admin/records'));
+        }
+        Auth::requireRole(...$sectionRoles[$section]['roles']);
+
+        $recordId = (int)Request::input('record_id', 0);
+        if ($recordId <= 0) {
+            Session::flash('error', 'Invalid business record.');
+            Response::redirect(Request::url('admin/records&section=' . $section));
+        }
+        try {
+            if ($section === 'suppliers') {
+                BusinessData::activateSupplier($recordId);
+                Session::flash('success', 'Supplier activated.');
+            } elseif ($section === 'customers') {
+                BusinessData::activateCustomer($recordId);
+                Session::flash('success', 'Customer activated.');
+            } else {
+                BusinessData::activateEmployee($recordId);
+                Session::flash('success', 'Employee activated.');
+            }
+        } catch (Throwable $exception) {
+            Session::flash('error', 'Could not activate record: ' . $exception->getMessage());
+        }
+        Response::redirect(Request::url('admin/records&section=' . $section . '&status=inactive'));
+    }
+
+    public static function permanentlyDeleteRecord(): void
+    {
+        Security::assertCsrf();
+        $section = (string)Request::input('section', '');
+        $sectionRoles = self::recordSections();
+        if (!isset($sectionRoles[$section])) {
+            Session::flash('error', 'Invalid business record type.');
+            Response::redirect(Request::url('admin/records'));
+        }
+        Auth::requireRole(...$sectionRoles[$section]['roles']);
+
+        $recordId = (int)Request::input('record_id', 0);
+        if ($recordId <= 0) {
+            Session::flash('error', 'Invalid business record.');
+            Response::redirect(Request::url('admin/records&section=' . $section . '&status=inactive'));
+        }
+        try {
+            if ($section === 'suppliers') {
+                BusinessData::permanentlyDeleteSupplier($recordId);
+                Session::flash('success', 'Supplier permanently deleted.');
+            } elseif ($section === 'customers') {
+                BusinessData::permanentlyDeleteCustomer($recordId);
+                Session::flash('success', 'Customer permanently deleted.');
+            } else {
+                BusinessData::permanentlyDeleteEmployee($recordId);
+                Session::flash('success', 'Employee permanently deleted.');
+            }
+        } catch (Throwable $exception) {
+            Session::flash('error', 'Could not permanently delete record: ' . $exception->getMessage());
+        }
+        Response::redirect(Request::url('admin/records&section=' . $section . '&status=inactive'));
+    }
+
     public static function users(): void
     {
         Auth::requireRole('Administrator');
@@ -237,6 +448,108 @@ final class AdminController
         Response::redirect(Request::url('admin/users'));
     }
 
+    public static function editUser(): void
+    {
+        Auth::requireRole('Administrator');
+        $userId = (int)Request::input('user_id', 0);
+        $user = $userId > 0 ? BusinessData::user($userId) : null;
+        if ($user === null) {
+            Session::flash('error', 'User not found.');
+            Response::redirect(Request::url('admin/users'));
+        }
+
+        View::render('admin/user_edit', [
+            'title' => 'Edit user - Algorithm Hardware Plug',
+            'user' => $user,
+        ]);
+    }
+
+    public static function updateUser(): void
+    {
+        Auth::requireRole('Administrator');
+        Security::assertCsrf();
+
+        $userId = (int)Request::input('user_id', 0);
+        $fullName = trim((string)Request::input('full_name', ''));
+        $username = trim((string)Request::input('username', ''));
+        $email = trim((string)Request::input('email', ''));
+        $phone = trim((string)Request::input('phone', ''));
+        if ($userId <= 0 || $fullName === '' || strlen($fullName) > 100
+            || !preg_match('/^[A-Za-z0-9._-]{3,50}$/', $username)
+            || filter_var($email, FILTER_VALIDATE_EMAIL) === false || strlen($email) > 256
+            || strlen($phone) > 30) {
+            Session::flash('error', 'Enter a valid name, username, email address and phone number.');
+            Response::redirect(Request::url('admin/users/edit&user_id=' . $userId));
+        }
+
+        try {
+            BusinessData::updateUser($userId, $fullName, $username, $email, $phone !== '' ? $phone : null);
+            Session::flash('success', 'User updated.');
+        } catch (Throwable $exception) {
+            Session::flash('error', 'Could not update user: ' . $exception->getMessage());
+        }
+        Response::redirect(Request::url('admin/users'));
+    }
+
+    public static function deactivateUser(): void
+    {
+        Auth::requireRole('Administrator');
+        Security::assertCsrf();
+        $userId = (int)Request::input('user_id', 0);
+        if ($userId <= 0) {
+            Session::flash('error', 'Invalid user.');
+            Response::redirect(Request::url('admin/users'));
+        }
+
+        try {
+            self::assertNotCurrentUser($userId);
+            BusinessData::deactivateUser($userId);
+            Session::flash('success', 'User deactivated.');
+        } catch (Throwable $exception) {
+            Session::flash('error', 'Could not deactivate user: ' . $exception->getMessage());
+        }
+        Response::redirect(Request::url('admin/users'));
+    }
+
+    public static function activateUser(): void
+    {
+        Auth::requireRole('Administrator');
+        Security::assertCsrf();
+        $userId = (int)Request::input('user_id', 0);
+        if ($userId <= 0) {
+            Session::flash('error', 'Invalid user.');
+            Response::redirect(Request::url('admin/users'));
+        }
+
+        try {
+            BusinessData::activateUser($userId);
+            Session::flash('success', 'User activated.');
+        } catch (Throwable $exception) {
+            Session::flash('error', 'Could not activate user: ' . $exception->getMessage());
+        }
+        Response::redirect(Request::url('admin/users'));
+    }
+
+    public static function permanentlyDeleteUser(): void
+    {
+        Auth::requireRole('Administrator');
+        Security::assertCsrf();
+        $userId = (int)Request::input('user_id', 0);
+        if ($userId <= 0) {
+            Session::flash('error', 'Invalid user.');
+            Response::redirect(Request::url('admin/users'));
+        }
+
+        try {
+            self::assertNotCurrentUser($userId);
+            BusinessData::permanentlyDeleteUser($userId);
+            Session::flash('success', 'User permanently deleted.');
+        } catch (Throwable $exception) {
+            Session::flash('error', 'Could not permanently delete user: ' . $exception->getMessage());
+        }
+        Response::redirect(Request::url('admin/users'));
+    }
+
     private static function modal(array $pending): array
     {
         $ui = is_array($pending['ui'] ?? null) ? $pending['ui'] : [];
@@ -267,6 +580,14 @@ final class AdminController
         return Config::get('app.env') === 'local'
             ? (string)Config::get('app.approval_phrase', '')
             : 'Enter the approval phrase';
+    }
+
+    private static function assertNotCurrentUser(int $userId): void
+    {
+        $currentUserId = (int)(Auth::user()['id'] ?? 0);
+        if ($userId === $currentUserId) {
+            throw new \RuntimeException('You cannot change the status of or delete your own account.');
+        }
     }
 
     private static function newRecordCode(string $prefix): string

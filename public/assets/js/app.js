@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', function () {
     const currency = 'GH₵';
+    const prefersReducedMotion = window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const finePointer = window.matchMedia
+        && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
     function fmt(n) {
         return currency + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -7,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const themeToggle = document.querySelector('[data-theme-toggle]');
     const themeIcon   = document.querySelector('[data-theme-icon]');
-    const themeLabel  = document.querySelector('[data-theme-label]');
     const sunIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>';
     const moonIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg>';
 
@@ -15,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
         document.documentElement.setAttribute('data-theme', theme);
         const tip = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
         if (themeIcon)  themeIcon.innerHTML = theme === 'dark' ? sunIcon : moonIcon;
-        if (themeLabel) themeLabel.textContent = theme === 'dark' ? 'Light' : 'Dark';
         if (themeToggle) {
             themeToggle.setAttribute('title', tip);
             themeToggle.setAttribute('aria-label', tip);
@@ -34,6 +36,372 @@ document.addEventListener('DOMContentLoaded', function () {
             applyTheme(next);
         });
     }
+
+    function setupAuthPointerMotion() {
+        if (prefersReducedMotion || !finePointer) return;
+
+        const ambient = document.querySelector('.auth-ambient');
+        const card = document.querySelector('.auth-card');
+        if (!ambient || !card) return;
+
+        let ambientFrame = 0;
+        let ambientX = 0;
+        let ambientY = 0;
+
+        window.addEventListener('pointermove', function (event) {
+            const rect = ambient.getBoundingClientRect();
+            ambientX = event.clientX - rect.left;
+            ambientY = event.clientY - rect.top;
+            if (ambientFrame) return;
+            ambientFrame = window.requestAnimationFrame(function () {
+                ambient.style.setProperty('--auth-pointer-x', ambientX + 'px');
+                ambient.style.setProperty('--auth-pointer-y', ambientY + 'px');
+                ambient.classList.add('has-auth-pointer');
+                ambientFrame = 0;
+            });
+        }, { passive: true });
+
+        document.addEventListener('pointerleave', function () {
+            ambient.classList.remove('has-auth-pointer');
+        });
+
+        let cardFrame = 0;
+        let cardX = 0;
+        let cardY = 0;
+
+        card.addEventListener('pointermove', function (event) {
+            const rect = card.getBoundingClientRect();
+            cardX = event.clientX - rect.left;
+            cardY = event.clientY - rect.top;
+            if (cardFrame) return;
+            cardFrame = window.requestAnimationFrame(function () {
+                card.style.setProperty('--auth-spot-x', cardX + 'px');
+                card.style.setProperty('--auth-spot-y', cardY + 'px');
+                cardFrame = 0;
+            });
+        }, { passive: true });
+
+        card.addEventListener('pointerleave', function () {
+            card.style.removeProperty('--auth-spot-x');
+            card.style.removeProperty('--auth-spot-y');
+        });
+    }
+
+    function setupAuthSubmitLoading() {
+        document.querySelectorAll('.auth-card form[data-auth-form]').forEach(function (authForm) {
+            authForm.addEventListener('submit', function () {
+                const submit = authForm.querySelector('button[type="submit"]');
+                if (!submit || submit.disabled) return;
+
+                const label = submit.querySelector('[data-submit-label]');
+                if (label) {
+                    if (!submit.dataset.originalLabel) submit.dataset.originalLabel = label.textContent;
+                    label.textContent = submit.dataset.loadingLabel || 'Please wait…';
+                }
+
+                submit.classList.add('is-loading');
+                submit.disabled = true;
+                authForm.setAttribute('aria-busy', 'true');
+            });
+        });
+    }
+
+    setupAuthPointerMotion();
+    setupAuthSubmitLoading();
+
+    function setupPasswordToggle(passwordInput) {
+        if (!passwordInput || passwordInput.dataset.passwordToggle === 'true') return;
+        if (passwordInput.closest('.password-field')) return;
+
+        passwordInput.dataset.passwordToggle = 'true';
+        const wrapper = document.createElement('div');
+        wrapper.className = 'password-field';
+        passwordInput.parentNode.insertBefore(wrapper, passwordInput);
+        wrapper.appendChild(passwordInput);
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'password-toggle';
+        toggle.setAttribute('aria-label', 'Show password');
+        toggle.setAttribute('title', 'Show password');
+        toggle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
+
+        toggle.addEventListener('click', function () {
+            const showPassword = passwordInput.type === 'password';
+            passwordInput.type = showPassword ? 'text' : 'password';
+            toggle.setAttribute('aria-label', showPassword ? 'Hide password' : 'Show password');
+            toggle.setAttribute('title', showPassword ? 'Hide password' : 'Show password');
+            toggle.classList.toggle('is-visible', showPassword);
+        });
+
+        wrapper.appendChild(toggle);
+    }
+
+    document.querySelectorAll('input[type="password"]').forEach(setupPasswordToggle);
+
+    const signupToggle = document.querySelector('[data-signup-toggle]');
+    const signupForm = document.querySelector('[data-signup-form]');
+    if (signupToggle && signupForm) {
+        let signupOpen = !signupForm.hidden;
+        let signupAnimation = null;
+
+        function setSignupOpen(open, focusFirst) {
+            if (signupAnimation) {
+                signupAnimation.cancel();
+                signupAnimation = null;
+            }
+
+            signupOpen = open;
+            signupToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            signupToggle.textContent = open ? 'Hide form' : 'Create account';
+
+            const firstInput = signupForm.querySelector('input:not([type="hidden"])');
+            if (open && focusFirst && firstInput) firstInput.focus();
+
+            const canAnimate = !prefersReducedMotion && typeof signupForm.animate === 'function';
+            if (!canAnimate) {
+                signupForm.classList.remove('is-toggling');
+                signupForm.hidden = !open;
+                return;
+            }
+
+            signupForm.classList.add('is-toggling');
+            if (open) {
+                signupForm.hidden = false;
+                signupAnimation = signupForm.animate([
+                    { opacity: 0, transform: 'translate3d(0, -10px, 0) scale(.985)' },
+                    { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)' }
+                ], { duration: 320, easing: 'cubic-bezier(.16, 1, .3, 1)' });
+            } else {
+                signupAnimation = signupForm.animate([
+                    { opacity: 1, transform: 'translate3d(0, 0, 0) scale(1)' },
+                    { opacity: 0, transform: 'translate3d(0, -8px, 0) scale(.985)' }
+                ], { duration: 220, easing: 'cubic-bezier(.4, 0, 1, 1)' });
+            }
+
+            signupAnimation.onfinish = function () {
+                signupForm.classList.remove('is-toggling');
+                if (!open) signupForm.hidden = true;
+                signupAnimation = null;
+            };
+        }
+
+        signupToggle.addEventListener('click', function () {
+            setSignupOpen(!signupOpen, true);
+        });
+
+        if (new URLSearchParams(window.location.search).get('signup') === '1') {
+            setSignupOpen(true, false);
+        }
+    }
+
+    const passwordToggleObserver = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            mutation.addedNodes.forEach(function (node) {
+                if (!(node instanceof Element)) return;
+                if (node.matches && node.matches('input[type="password"]')) setupPasswordToggle(node);
+                node.querySelectorAll && node.querySelectorAll('input[type="password"]').forEach(setupPasswordToggle);
+            });
+        });
+    });
+    passwordToggleObserver.observe(document.body, { childList: true, subtree: true });
+
+    let searchableSelectCounter = 0;
+
+    function setupSearchableSelect(select) {
+        if (!select || select.dataset.searchableSelect === 'true') return;
+        select.dataset.searchableSelect = 'true';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'searchable-select';
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.appendChild(select);
+
+        select.classList.add('searchable-select-native');
+
+        const toggleId = 'searchable-select-toggle-' + (++searchableSelectCounter);
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.id = toggleId;
+        toggle.className = 'searchable-select-toggle';
+        toggle.setAttribute('role', 'combobox');
+        toggle.setAttribute('aria-haspopup', 'listbox');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-label', select.getAttribute('aria-label') || 'Search and select');
+
+        const panel = document.createElement('div');
+        panel.className = 'searchable-select-panel';
+        panel.hidden = true;
+
+        const search = document.createElement('input');
+        search.type = 'search';
+        search.className = 'searchable-select-search';
+        search.setAttribute('autocomplete', 'off');
+        search.setAttribute('aria-label', 'Search choices');
+        search.placeholder = 'Search options';
+
+        const list = document.createElement('div');
+        list.className = 'searchable-select-list';
+        list.setAttribute('role', 'listbox');
+
+        function syncToggle() {
+            const selected = select.options[select.selectedIndex];
+            toggle.textContent = selected
+                ? selected.textContent.replace(/\s+/g, ' ').trim()
+                : 'Select an option';
+        }
+
+        function closePanel(returnFocus) {
+            panel.hidden = true;
+            toggle.setAttribute('aria-expanded', 'false');
+            if (returnFocus) toggle.focus();
+        }
+
+        function openPanel() {
+            document.querySelectorAll('.searchable-select-panel:not([hidden])').forEach(function (openPanel) {
+                if (openPanel !== panel) openPanel.hidden = true;
+                const openToggle = openPanel.parentElement.querySelector('.searchable-select-toggle');
+                if (openToggle) openToggle.setAttribute('aria-expanded', 'false');
+            });
+            panel.hidden = false;
+            toggle.setAttribute('aria-expanded', 'true');
+            search.value = '';
+            renderOptions('');
+            window.requestAnimationFrame(function () { search.focus(); });
+        }
+
+        function chooseOption(option) {
+            select.value = option.value;
+            syncToggle();
+            closePanel(true);
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        function renderOptions(query) {
+            list.replaceChildren();
+            const normalizedQuery = query.trim().toLocaleLowerCase();
+            let matchCount = 0;
+
+            Array.from(select.options).forEach(function (option) {
+                const label = option.textContent.replace(/\s+/g, ' ').trim();
+                if (normalizedQuery && !label.toLocaleLowerCase().includes(normalizedQuery)) return;
+                matchCount++;
+
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'searchable-select-option';
+                item.setAttribute('role', 'option');
+                item.textContent = label;
+                item.dataset.value = option.value;
+                item.setAttribute('aria-selected', option.selected ? 'true' : 'false');
+                item.addEventListener('click', function () { chooseOption(option); });
+                list.appendChild(item);
+            });
+
+            if (matchCount === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'searchable-select-empty';
+                empty.textContent = 'No matching options';
+                list.appendChild(empty);
+            }
+        }
+
+        toggle.addEventListener('click', function () {
+            if (panel.hidden) openPanel();
+            else closePanel(false);
+        });
+        toggle.addEventListener('keydown', function (event) {
+            if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openPanel();
+            }
+        });
+        search.addEventListener('input', function () { renderOptions(search.value); });
+        search.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                closePanel(true);
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                const first = list.querySelector('.searchable-select-option');
+                if (first) first.focus();
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                const items = list.querySelectorAll('.searchable-select-option');
+                if (items.length) items[items.length - 1].focus();
+            } else if (event.key === 'Enter') {
+                event.preventDefault();
+                const first = list.querySelector('.searchable-select-option');
+                if (first) first.click();
+            }
+        });
+
+        panel.addEventListener('keydown', function (event) {
+            if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+            event.preventDefault();
+            const items = Array.from(list.querySelectorAll('.searchable-select-option'));
+            if (items.length === 0) return;
+            const currentIndex = items.indexOf(document.activeElement);
+            const nextIndex = event.key === 'ArrowDown'
+                ? (currentIndex + 1) % items.length
+                : (currentIndex <= 0 ? items.length - 1 : currentIndex - 1);
+            items[nextIndex].focus();
+        });
+
+        select.addEventListener('change', syncToggle);
+        wrapper.appendChild(toggle);
+        panel.appendChild(search);
+        panel.appendChild(list);
+        wrapper.appendChild(panel);
+
+        if (select.id) {
+            const label = document.querySelector('label[for="' + CSS.escape(select.id) + '"]');
+            if (label) label.setAttribute('for', toggleId);
+        }
+
+        syncToggle();
+        renderOptions('');
+
+        const optionsObserver = new MutationObserver(function () {
+            syncToggle();
+            if (!panel.hidden) renderOptions(search.value);
+        });
+        optionsObserver.observe(select, { childList: true });
+    }
+
+    document.querySelectorAll('select').forEach(setupSearchableSelect);
+
+    const searchableSelectObserver = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            mutation.addedNodes.forEach(function (node) {
+                if (!(node instanceof Element)) return;
+                if (node.matches && node.matches('select')) setupSearchableSelect(node);
+                node.querySelectorAll && node.querySelectorAll('select').forEach(setupSearchableSelect);
+            });
+        });
+    });
+    searchableSelectObserver.observe(document.body, { childList: true, subtree: true });
+
+    document.addEventListener('click', function (event) {
+        if (event.target.closest('.searchable-select')) return;
+        document.querySelectorAll('.searchable-select-panel:not([hidden])').forEach(function (panel) {
+            panel.hidden = true;
+            const toggle = panel.parentElement.querySelector('.searchable-select-toggle');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape') return;
+        const openPanel = document.querySelector('.searchable-select-panel:not([hidden])');
+        if (!openPanel) return;
+        openPanel.hidden = true;
+        const toggle = openPanel.parentElement.querySelector('.searchable-select-toggle');
+        if (toggle) {
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
 
     function setupHeaderPopover(menuSelector, toggleSelector, panelSelector, labelAttribute) {
         const menu = document.querySelector(menuSelector);
@@ -180,47 +548,156 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    document.querySelectorAll('[data-export-csv]').forEach(function (exportButton) {
-        exportButton.addEventListener('click', function () {
-            const page = exportButton.closest('main');
-            const table = page ? page.querySelector('.table-wrap table') : null;
-            if (!table) {
-                console.error('CSV export requires a table on the current page.');
-                return;
-            }
+    document.querySelectorAll('form[data-confirm-deactivate]').forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            const message = form.dataset.confirmDeactivate || 'Deactivate this record?';
+            if (!window.confirm(message)) event.preventDefault();
+        });
+    });
 
-            const headerCells = Array.from(table.querySelectorAll('thead tr:last-child th'));
-            if (headerCells.length === 0) {
-                console.error('CSV export requires table headers.');
-                return;
-            }
+    document.querySelectorAll('form[data-confirm-delete]').forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            const message = form.dataset.confirmDelete || 'Permanently delete this record?';
+            if (!window.confirm(message)) event.preventDefault();
+        });
+    });
 
-            const columns = headerCells
-                .map(function (cell, index) { return { cell: cell, index: index }; })
-                .filter(function (column) { return !column.cell.hasAttribute('data-export-ignore'); });
-            const rows = Array.from(table.querySelectorAll('tbody tr'))
-                .filter(function (row) { return !row.classList.contains('table-empty'); })
-                .map(function (row) {
-                    const cells = Array.from(row.cells);
-                    return columns.map(function (column) {
-                        const cell = cells[column.index];
-                        return cell ? cell.innerText.replace(/\s+/g, ' ').trim() : '';
-                    });
+    document.querySelectorAll('[data-record-form-toggle]').forEach(function (toggle) {
+        toggle.addEventListener('click', function () {
+            const form = document.getElementById(toggle.dataset.recordFormToggle);
+            if (!form) return;
+            const open = form.hidden;
+            form.hidden = !open;
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            toggle.textContent = open ? 'Cancel' : 'Add supplier';
+            if (open) {
+                const firstInput = form.querySelector('input:not([type="hidden"])');
+                if (firstInput) firstInput.focus();
+            }
+        });
+    });
+
+    function openCsvPreview(table, requestedFilename) {
+        if (!table) {
+            console.error('CSV export requires a table on the current page.');
+            return;
+        }
+
+        const headerCells = Array.from(table.querySelectorAll('thead tr:last-child th'));
+        if (headerCells.length === 0) {
+            console.error('CSV export requires table headers.');
+            return;
+        }
+
+        const columns = headerCells
+            .map(function (cell, index) { return { cell: cell, index: index }; })
+            .filter(function (column) { return !column.cell.hasAttribute('data-export-ignore'); });
+        const headers = columns.map(function (column) {
+            return column.cell.textContent.replace(/\s+/g, ' ').trim();
+        });
+        const rows = Array.from(table.querySelectorAll('tbody tr'))
+            .filter(function (row) { return !row.classList.contains('table-empty'); })
+            .map(function (row) {
+                const cells = Array.from(row.cells);
+                return columns.map(function (column) {
+                    const cell = cells[column.index];
+                    return cell ? cell.innerText.replace(/\s+/g, ' ').trim() : '';
                 });
+            });
+
+        let filename = requestedFilename || 'table-export.csv';
+        filename = filename.replace(/[^a-z0-9._-]+/gi, '-').replace(/^-+|-+$/g, '');
+        if (!filename.toLowerCase().endsWith('.csv')) filename += '.csv';
+
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop csv-preview-backdrop';
+        backdrop.setAttribute('role', 'dialog');
+        backdrop.setAttribute('aria-modal', 'true');
+        backdrop.setAttribute('aria-labelledby', 'csv-preview-title');
+
+        const card = document.createElement('div');
+        card.className = 'modal-card csv-preview-card';
+
+        const eyebrow = document.createElement('p');
+        eyebrow.className = 'eyebrow';
+        eyebrow.textContent = 'CSV export preview';
+
+        const title = document.createElement('h2');
+        title.id = 'csv-preview-title';
+        title.textContent = 'Confirm download';
+
+        const summary = document.createElement('p');
+        summary.className = 'muted text-md csv-preview-summary';
+        summary.textContent = filename + ' · ' + rows.length + ' data row' + (rows.length === 1 ? '' : 's');
+
+        const preview = document.createElement('div');
+        preview.className = 'csv-preview-table';
+        const previewTable = document.createElement('table');
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        headers.forEach(function (header) {
+            const th = document.createElement('th');
+            th.textContent = header;
+            headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        previewTable.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        const previewRows = rows.slice(0, 5);
+        if (previewRows.length === 0) {
+            const emptyRow = document.createElement('tr');
+            const emptyCell = document.createElement('td');
+            emptyCell.colSpan = Math.max(headers.length, 1);
+            emptyCell.textContent = 'No data rows';
+            emptyRow.appendChild(emptyCell);
+            tbody.appendChild(emptyRow);
+        } else {
+            previewRows.forEach(function (row) {
+                const tr = document.createElement('tr');
+                row.forEach(function (value) {
+                    const td = document.createElement('td');
+                    td.textContent = value;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+        previewTable.appendChild(tbody);
+        preview.appendChild(previewTable);
+
+        const actions = document.createElement('div');
+        actions.className = 'modal-actions';
+        const cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.className = 'btn btn-ghost';
+        cancel.textContent = 'Cancel';
+        const download = document.createElement('button');
+        download.type = 'button';
+        download.className = 'btn btn-primary';
+        download.textContent = 'Download CSV';
+
+        function closePreview() {
+            backdrop.remove();
+            document.removeEventListener('keydown', handleKeydown);
+        }
+
+        function handleKeydown(event) {
+            if (event.key === 'Escape') closePreview();
+        }
+
+        cancel.addEventListener('click', closePreview);
+        backdrop.addEventListener('click', function (event) {
+            if (event.target === backdrop) closePreview();
+        });
+        download.addEventListener('click', function () {
             const csvCell = function (value) {
                 const safeValue = /^[\t\r ]*[=+\-@]/.test(value) ? "'" + value : value;
                 return '"' + safeValue.replace(/"/g, '""') + '"';
             };
-            const content = [columns.map(function (column) {
-                return column.cell.textContent.replace(/\s+/g, ' ').trim();
-            })]
-                .concat(rows)
+            const content = [headers].concat(rows)
                 .map(function (row) { return row.map(csvCell).join(','); })
                 .join('\r\n');
-            let filename = exportButton.dataset.exportFilename || 'table-export.csv';
-            filename = filename.replace(/[^a-z0-9._-]+/gi, '-').replace(/^-+|-+$/g, '');
-            if (!filename.toLowerCase().endsWith('.csv')) filename += '.csv';
-
             const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -230,12 +707,39 @@ document.addEventListener('DOMContentLoaded', function () {
             link.click();
             link.remove();
             window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+            closePreview();
+        });
+        document.addEventListener('keydown', handleKeydown);
+
+        actions.appendChild(cancel);
+        actions.appendChild(download);
+        card.appendChild(eyebrow);
+        card.appendChild(title);
+        card.appendChild(summary);
+        card.appendChild(preview);
+        card.appendChild(actions);
+        backdrop.appendChild(card);
+        document.body.appendChild(backdrop);
+        download.focus();
+    }
+
+    document.querySelectorAll('[data-export-csv]').forEach(function (exportButton) {
+        exportButton.addEventListener('click', function () {
+            const page = exportButton.closest('main');
+            const table = page ? page.querySelector('.table-wrap table') : null;
+            openCsvPreview(table, exportButton.dataset.exportFilename);
+        });
+    });
+
+    document.querySelectorAll('[data-report-csv-export]').forEach(function (exportButton) {
+        exportButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            const table = document.querySelector('main .table-wrap table');
+            openCsvPreview(table, 'sales-report.csv');
         });
     });
 
     const revealTargets = document.querySelectorAll('[data-reveal]');
-    const prefersReducedMotion = window.matchMedia
-        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (revealTargets.length > 0 && 'IntersectionObserver' in window && !prefersReducedMotion) {
         const revealObserver = new IntersectionObserver(function (entries, observer) {
             entries.forEach(function (entry) {
@@ -464,6 +968,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const returnForm = document.querySelector('[data-return-form]');
     if (returnForm) {
+        returnForm.addEventListener('submit', function (event) {
+            if (!window.confirm(returnForm.dataset.confirmRefund || 'Process this refund?')) {
+                event.preventDefault();
+            }
+        });
         const refundInput = document.getElementById('refund_amount');
         const maxRefundEl = returnForm.querySelector('[data-max-refund]');
         let refundTouched = false;

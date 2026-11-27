@@ -24,13 +24,13 @@ use App\Core\View;
         <h1>Welcome back<span class="auth-title-dot">.</span></h1>
         <p class="auth-lead">Sign in to continue to your retail operations workspace.</p>
 
-        <?php if ($loggedOut !== null): ?>
+        <?php if ($loggedOut): ?>
             <div class="notice notice-success" role="status">
                 You have been signed out successfully.
             </div>
         <?php endif; ?>
 
-        <form method="post" action="<?= View::e(Request::url('login')) ?>" class="form-stack">
+        <form method="post" action="<?= View::e(Request::url('login')) ?>" class="form-stack" data-auth-form>
             <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
 
             <div class="field">
@@ -47,10 +47,59 @@ use App\Core\View;
             </div>
 
             <button type="submit" class="btn btn-primary auth-submit mt-4">
-                <span>Sign in securely</span>
+                <span data-submit-label>Sign in securely</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                     <path d="M5 12h14m-6-6 6 6-6 6"/>
                 </svg>
+            </button>
+        </form>
+
+        <div class="auth-signup-gateway">
+            <span>New customer?</span>
+            <button type="button" class="btn btn-ghost btn-sm"
+                    data-signup-toggle aria-controls="customer-signup" aria-expanded="false">
+                Create account
+            </button>
+        </div>
+
+        <form id="customer-signup" method="post" action="<?= View::e(Request::url('signup')) ?>"
+              class="form-stack auth-signup-form" data-auth-form data-signup-form hidden>
+            <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
+            <h2>Create customer account</h2>
+            <div class="form-grid">
+                <div class="field full">
+                    <label for="signup-full-name">Full name <span class="req">*</span></label>
+                    <input id="signup-full-name" name="full_name" type="text" maxlength="100" required
+                           autocomplete="name" placeholder="Your full name">
+                </div>
+                <div class="field">
+                    <label for="signup-username">Username <span class="req">*</span></label>
+                    <input id="signup-username" name="username" type="text" maxlength="50" required
+                           autocomplete="username" placeholder="Choose a username">
+                </div>
+                <div class="field">
+                    <label for="signup-email">Email <span class="req">*</span></label>
+                    <input id="signup-email" name="email" type="email" maxlength="256" required
+                           autocomplete="email" placeholder="you@example.com">
+                </div>
+                <div class="field full">
+                    <label for="signup-phone">Phone</label>
+                    <input id="signup-phone" name="phone" type="tel" maxlength="30"
+                           autocomplete="tel" placeholder="Phone number">
+                </div>
+                <div class="field">
+                    <label for="signup-password">Password <span class="req">*</span></label>
+                    <input id="signup-password" name="password" type="password" minlength="8" required
+                           autocomplete="new-password" placeholder="At least 8 characters">
+                </div>
+                <div class="field">
+                    <label for="signup-confirm-password">Confirm password <span class="req">*</span></label>
+                    <input id="signup-confirm-password" name="confirm_password" type="password" minlength="8" required
+                           autocomplete="new-password" placeholder="Repeat your password">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary auth-submit">
+                <span data-submit-label>Create customer account</span>
             </button>
         </form>
 
@@ -76,6 +125,12 @@ use App\Core\View;
             <img src="<?= View::e(Request::asset('images/site-logo.svg')) ?>" alt="" width="48" height="48">
             <span>ALGORITHM HARDWARE PLUG<small>RETAIL OPERATIONS</small></span>
         </div>
+        <figure class="auth-aside-photo">
+            <img src="<?= View::e(Request::asset('images/hardware-store.jpg')) ?>"
+                 alt="Real hardware store with tools and shelves ready for retail operations"
+                 width="1200" height="800" loading="eager" decoding="async">
+            <figcaption>Hardware store operations · Photo: vijesh vijayan / Pexels</figcaption>
+        </figure>
         <p class="eyebrow eyebrow-light">One connected workspace</p>
         <h2>Keep every part of your business moving.</h2>
         <p class="auth-aside-copy">A clear, secure home for the people, products and daily activity behind your store.</p>
@@ -83,7 +138,7 @@ use App\Core\View;
             <li>Role-based access with database-enforced context</li>
             <li>Approval workflow for sensitive operations</li>
             <li>Tamper-proof audit trail for every critical action</li>
-            <li>Inventory, sales, returns and reporting — all in one place</li>
+            <li>Inventory, sales, returns and reporting: all in one place</li>
         </ul>
         <div class="auth-aside-footer">
             <span class="auth-aside-footer-icon" aria-hidden="true">

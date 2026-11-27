@@ -20,7 +20,7 @@ if ($authUser !== null) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Algorithm Hardware Plug – Retail Management System">
+    <meta name="description" content="Algorithm Hardware Plug - Retail Management System">
     <title><?= View::e($title ?? 'Algorithm Hardware Plug') ?></title>
     <link rel="icon" type="image/svg+xml" href="<?= View::e(Request::asset('images/site-logo.svg')) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -89,7 +89,6 @@ if ($authUser !== null) {
                         <path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/>
                     </svg>
                 </span>
-                <span class="theme-label" data-theme-label>Dark</span>
             </button>
             <?php if ($authUser !== null): ?>
                 <div class="quick-actions-menu" data-quick-actions-menu>
@@ -270,6 +269,7 @@ if ($authUser !== null) {
 
 <?php if ($currentRoute === 'login'): ?>
     <div class="auth-ambient" aria-hidden="true">
+        <span class="auth-cursor-glow"></span>
         <span class="auth-orbit auth-orbit-one"></span>
         <span class="auth-orbit auth-orbit-two"></span>
         <span class="auth-glow auth-glow-one"></span>

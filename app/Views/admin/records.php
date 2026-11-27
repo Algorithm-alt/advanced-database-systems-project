@@ -29,11 +29,16 @@ use App\Core\View;
         <div class="section-heading">
             <div>
                 <h2>Suppliers</h2>
-                <p class="muted">Active supplier contacts available to the business.</p>
+                <p class="muted">Supplier contacts with status and record actions.</p>
             </div>
-            <span class="badge badge-info"><?= count($suppliers) ?> supplier<?= count($suppliers) !== 1 ? 's' : '' ?></span>
+            <div class="actions">
+                <span class="badge badge-info"><?= count($suppliers) ?> supplier<?= count($suppliers) !== 1 ? 's' : '' ?></span>
+                <button type="button" class="btn btn-primary btn-sm"
+                        data-record-form-toggle="supplier-add-form"
+                        aria-controls="supplier-add-form" aria-expanded="false">Add supplier</button>
+            </div>
         </div>
-        <div class="table-wrap">
+        <div class="table-wrap table-scroll">
             <table>
                 <thead>
                 <tr>
@@ -42,19 +47,55 @@ use App\Core\View;
                     <th>Phone</th>
                     <th>Email</th>
                     <th>Address</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
                 <?php if ($suppliers === []): ?>
-                    <tr><td colspan="5" class="table-empty">No suppliers found.</td></tr>
+                    <tr><td colspan="7" class="table-empty">No suppliers found.</td></tr>
                 <?php else: ?>
                     <?php foreach ($suppliers as $supplier): ?>
                         <tr>
                             <td><strong><?= View::e($supplier['SupplierName']) ?></strong><br><code><?= View::e($supplier['SupplierCode']) ?></code></td>
-                            <td><?= View::e($supplier['ContactName'] ?? '—') ?></td>
-                            <td><?= View::e($supplier['Phone'] ?? '—') ?></td>
-                            <td><?= View::e($supplier['Email'] ?? '—') ?></td>
-                            <td><?= View::e($supplier['Address'] ?? '—') ?></td>
+                            <td><?= View::e($supplier['ContactName'] ?? '-') ?></td>
+                            <td><?= View::e($supplier['Phone'] ?? '-') ?></td>
+                            <td><?= View::e($supplier['Email'] ?? '-') ?></td>
+                            <td><?= View::e($supplier['Address'] ?? '-') ?></td>
+                            <td>
+                                <span class="badge <?= (int)($supplier['IsActive'] ?? 1) === 1 ? 'badge-ok' : 'badge-warn' ?>">
+                                    <?= (int)($supplier['IsActive'] ?? 1) === 1 ? 'Active' : 'Inactive' ?>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="actions">
+                                    <a class="btn btn-ghost btn-sm"
+                                       href="<?= View::e(Request::url('admin/records/edit&section=suppliers&record_id=' . (int)$supplier['SupplierID'])) ?>">Edit</a>
+                                    <?php if ((int)($supplier['IsActive'] ?? 1) === 1): ?>
+                                        <form method="post" action="<?= View::e(Request::url('admin/records/deactivate')) ?>"
+                                              data-confirm-deactivate="Deactivate this supplier?">
+                                            <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
+                                            <input type="hidden" name="section" value="suppliers">
+                                            <input type="hidden" name="record_id" value="<?= (int)$supplier['SupplierID'] ?>">
+                                            <button type="submit" class="btn btn-danger btn-sm">Deactivate</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <form method="post" action="<?= View::e(Request::url('admin/records/activate')) ?>">
+                                            <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
+                                            <input type="hidden" name="section" value="suppliers">
+                                            <input type="hidden" name="record_id" value="<?= (int)$supplier['SupplierID'] ?>">
+                                            <button type="submit" class="btn btn-primary btn-sm">Activate</button>
+                                        </form>
+                                    <?php endif; ?>
+                                    <form method="post" action="<?= View::e(Request::url('admin/records/permanently-delete')) ?>"
+                                          data-confirm-delete="Permanently delete this supplier? This cannot be undone.">
+                                        <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
+                                        <input type="hidden" name="section" value="suppliers">
+                                        <input type="hidden" name="record_id" value="<?= (int)$supplier['SupplierID'] ?>">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete permanently</button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -63,7 +104,9 @@ use App\Core\View;
         </div>
     </section>
 
-    <form method="post" action="<?= View::e(Request::url('admin/records/create')) ?>" class="panel form-stack">
+    <form id="supplier-add-form" method="post"
+          action="<?= View::e(Request::url('admin/records/create')) ?>"
+          class="panel form-stack" data-record-form hidden>
         <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
         <input type="hidden" name="type" value="suppliers">
         <h2>Add supplier</h2>
@@ -98,11 +141,11 @@ use App\Core\View;
         <div class="section-heading">
             <div>
                 <h2>Customers</h2>
-                <p class="muted">Active customers available to point of sale.</p>
+                <p class="muted">Customers with status and record actions.</p>
             </div>
             <span class="badge badge-info"><?= count($customers) ?> customer<?= count($customers) !== 1 ? 's' : '' ?></span>
         </div>
-        <div class="table-wrap">
+        <div class="table-wrap table-scroll">
             <table>
                 <thead>
                 <tr>
@@ -111,19 +154,55 @@ use App\Core\View;
                     <th>Phone</th>
                     <th>Address</th>
                     <th>Loyalty points</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
                 <?php if ($customers === []): ?>
-                    <tr><td colspan="5" class="table-empty">No customers found.</td></tr>
+                    <tr><td colspan="7" class="table-empty">No customers found.</td></tr>
                 <?php else: ?>
                     <?php foreach ($customers as $customer): ?>
                         <tr>
                             <td><strong><?= View::e($customer['FullName']) ?></strong><br><code><?= View::e($customer['CustomerCode']) ?></code></td>
                             <td><?= View::e($customer['Email']) ?></td>
-                            <td><?= View::e($customer['Phone'] ?? '—') ?></td>
-                            <td><?= View::e($customer['Address'] ?? '—') ?></td>
+                            <td><?= View::e($customer['Phone'] ?? '-') ?></td>
+                            <td><?= View::e($customer['Address'] ?? '-') ?></td>
                             <td class="number"><?= View::e($customer['LoyaltyPoints']) ?></td>
+                            <td>
+                                <span class="badge <?= (int)($customer['IsActive'] ?? 1) === 1 ? 'badge-ok' : 'badge-warn' ?>">
+                                    <?= (int)($customer['IsActive'] ?? 1) === 1 ? 'Active' : 'Inactive' ?>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="actions">
+                                    <a class="btn btn-ghost btn-sm"
+                                       href="<?= View::e(Request::url('admin/records/edit&section=customers&record_id=' . (int)$customer['CustomerID'])) ?>">Edit</a>
+                                    <?php if ((int)($customer['IsActive'] ?? 1) === 1): ?>
+                                        <form method="post" action="<?= View::e(Request::url('admin/records/deactivate')) ?>"
+                                              data-confirm-deactivate="Deactivate this customer?">
+                                            <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
+                                            <input type="hidden" name="section" value="customers">
+                                            <input type="hidden" name="record_id" value="<?= (int)$customer['CustomerID'] ?>">
+                                            <button type="submit" class="btn btn-danger btn-sm">Deactivate</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <form method="post" action="<?= View::e(Request::url('admin/records/activate')) ?>">
+                                            <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
+                                            <input type="hidden" name="section" value="customers">
+                                            <input type="hidden" name="record_id" value="<?= (int)$customer['CustomerID'] ?>">
+                                            <button type="submit" class="btn btn-primary btn-sm">Activate</button>
+                                        </form>
+                                    <?php endif; ?>
+                                    <form method="post" action="<?= View::e(Request::url('admin/records/permanently-delete')) ?>"
+                                          data-confirm-delete="Permanently delete this customer? This cannot be undone.">
+                                        <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
+                                        <input type="hidden" name="section" value="customers">
+                                        <input type="hidden" name="record_id" value="<?= (int)$customer['CustomerID'] ?>">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete permanently</button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -164,11 +243,11 @@ use App\Core\View;
         <div class="section-heading">
             <div>
                 <h2>Employees</h2>
-                <p class="muted">Active staff records available to point of sale and returns.</p>
+                <p class="muted">Staff records with status and record actions.</p>
             </div>
             <span class="badge badge-info"><?= count($employees) ?> employee<?= count($employees) !== 1 ? 's' : '' ?></span>
         </div>
-        <div class="table-wrap">
+        <div class="table-wrap table-scroll">
             <table>
                 <thead>
                 <tr>
@@ -178,20 +257,56 @@ use App\Core\View;
                     <th>Phone</th>
                     <th>Email</th>
                     <th>Hire date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
                 <?php if ($employees === []): ?>
-                    <tr><td colspan="6" class="table-empty">No employees found.</td></tr>
+                    <tr><td colspan="8" class="table-empty">No employees found.</td></tr>
                 <?php else: ?>
                     <?php foreach ($employees as $employee): ?>
                         <tr>
                             <td><strong><?= View::e($employee['FullName']) ?></strong><br><code><?= View::e($employee['EmployeeCode']) ?></code></td>
                             <td><?= View::e($employee['Position']) ?></td>
-                            <td><?= View::e($employee['Department'] ?? '—') ?></td>
-                            <td><?= View::e($employee['Phone'] ?? '—') ?></td>
-                            <td><?= View::e($employee['Email'] ?? '—') ?></td>
+                            <td><?= View::e($employee['Department'] ?? '-') ?></td>
+                            <td><?= View::e($employee['Phone'] ?? '-') ?></td>
+                            <td><?= View::e($employee['Email'] ?? '-') ?></td>
                             <td><?= View::e($employee['HireDate']) ?></td>
+                            <td>
+                                <span class="badge <?= (int)($employee['IsActive'] ?? 1) === 1 ? 'badge-ok' : 'badge-warn' ?>">
+                                    <?= (int)($employee['IsActive'] ?? 1) === 1 ? 'Active' : 'Inactive' ?>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="actions">
+                                    <a class="btn btn-ghost btn-sm"
+                                       href="<?= View::e(Request::url('admin/records/edit&section=employees&record_id=' . (int)$employee['EmployeeID'])) ?>">Edit</a>
+                                    <?php if ((int)($employee['IsActive'] ?? 1) === 1): ?>
+                                        <form method="post" action="<?= View::e(Request::url('admin/records/deactivate')) ?>"
+                                              data-confirm-deactivate="Deactivate this employee?">
+                                            <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
+                                            <input type="hidden" name="section" value="employees">
+                                            <input type="hidden" name="record_id" value="<?= (int)$employee['EmployeeID'] ?>">
+                                            <button type="submit" class="btn btn-danger btn-sm">Deactivate</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <form method="post" action="<?= View::e(Request::url('admin/records/activate')) ?>">
+                                            <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
+                                            <input type="hidden" name="section" value="employees">
+                                            <input type="hidden" name="record_id" value="<?= (int)$employee['EmployeeID'] ?>">
+                                            <button type="submit" class="btn btn-primary btn-sm">Activate</button>
+                                        </form>
+                                    <?php endif; ?>
+                                    <form method="post" action="<?= View::e(Request::url('admin/records/permanently-delete')) ?>"
+                                          data-confirm-delete="Permanently delete this employee? This cannot be undone.">
+                                        <input type="hidden" name="csrf_token" value="<?= View::e(Session::csrfToken()) ?>">
+                                        <input type="hidden" name="section" value="employees">
+                                        <input type="hidden" name="record_id" value="<?= (int)$employee['EmployeeID'] ?>">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete permanently</button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
