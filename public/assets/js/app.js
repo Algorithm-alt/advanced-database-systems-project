@@ -251,6 +251,29 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const scrollProgressBar = document.querySelector('[data-scroll-progress]');
+    if (scrollProgressBar) {
+        const siteHeader = document.querySelector('.site-header');
+        let scrollUpdatePending = false;
+        const updateScrollProgress = function () {
+            const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+            const progress = scrollableHeight > 0 ? Math.min(1, scrollTop / scrollableHeight) : 0;
+            scrollProgressBar.style.transform = 'scaleX(' + progress + ')';
+            if (siteHeader) siteHeader.classList.toggle('is-scrolled', scrollTop > 8);
+            scrollUpdatePending = false;
+        };
+        const scheduleScrollUpdate = function () {
+            if (scrollUpdatePending) return;
+            scrollUpdatePending = true;
+            window.requestAnimationFrame(updateScrollProgress);
+        };
+
+        window.addEventListener('scroll', scheduleScrollUpdate, { passive: true });
+        window.addEventListener('resize', scheduleScrollUpdate);
+        updateScrollProgress();
+    }
+
     const notificationCenter = document.querySelector('[data-notification-center]');
     if (notificationCenter) {
         const notificationToggle = notificationCenter.querySelector('[data-notification-toggle]');

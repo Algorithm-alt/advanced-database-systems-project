@@ -574,6 +574,28 @@ code {
     padding-top: 22px;
     padding-bottom: 48px;
 }
+html.landing-scroll { scroll-behavior: smooth; scroll-padding-top: 84px; }
+.landing-page .site-header { transition: box-shadow 260ms ease; }
+.landing-page .site-header.is-scrolled { box-shadow: 0 6px 30px var(--brand-glow); }
+.landing-scroll-progress {
+    position: fixed;
+    top: 68px;
+    left: 0;
+    z-index: 99;
+    width: 100%;
+    height: 3px;
+    pointer-events: none;
+}
+.landing-scroll-progress span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--brand), #3b82f6);
+    box-shadow: 0 0 10px var(--brand-glow);
+    transform: scaleX(0);
+    transform-origin: left center;
+    will-change: transform;
+}
 .landing-hero {
     position: relative;
     isolation: isolate;
@@ -1168,6 +1190,7 @@ code {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    html.landing-scroll { scroll-behavior: auto; }
     .auth-orbit,
     .auth-glow,
     .auth-orbit::before,
@@ -1613,6 +1636,7 @@ td.number, th.number {
 
 @media (max-width: 800px) {
     .shell { width: calc(100% - 32px); }
+    .landing-scroll-progress { top: 60px; }
     .landing-page .page { padding-top: 12px; }
     .landing-hero {
         grid-template-columns: minmax(0, 1fr);
@@ -1668,7 +1692,7 @@ td.number, th.number {
 }
 
 @media print {
-    .site-header, .site-footer, .sidebar, .sidebar-backdrop, .actions, .toolbar, form { display: none !important; }
+    .site-header, .site-footer, .sidebar, .sidebar-backdrop, .landing-scroll-progress, .actions, .toolbar, form { display: none !important; }
     .notice-stack { display: none !important; }
     .app-shell { display: block; }
     .shell, .page-with-sidebar { width: 100%; max-width: none; padding: 0; }

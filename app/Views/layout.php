@@ -16,7 +16,7 @@ if ($authUser !== null) {
 }
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="en" class="<?= $currentRoute === 'home' ? 'landing-scroll' : '' ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -261,6 +261,12 @@ if ($authUser !== null) {
         </div>
     </div>
 </header>
+
+<?php if ($currentRoute === 'home'): ?>
+    <div class="landing-scroll-progress" aria-hidden="true">
+        <span data-scroll-progress></span>
+    </div>
+<?php endif; ?>
 
 <?php if ($currentRoute === 'login'): ?>
     <div class="auth-ambient" aria-hidden="true">
