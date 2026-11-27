@@ -234,6 +234,24 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    const revealTargets = document.querySelectorAll('[data-reveal]');
+    const prefersReducedMotion = window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (revealTargets.length > 0 && 'IntersectionObserver' in window && !prefersReducedMotion) {
+        const revealObserver = new IntersectionObserver(function (entries, observer) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -24px 0px' });
+
+        revealTargets.forEach(function (target) {
+            target.classList.add('reveal-ready');
+            revealObserver.observe(target);
+        });
+    }
+
     const notificationCenter = document.querySelector('[data-notification-center]');
     if (notificationCenter) {
         const notificationToggle = notificationCenter.querySelector('[data-notification-toggle]');

@@ -119,13 +119,13 @@ use App\Core\View;
 </section>
 
 <section class="landing-capabilities" id="capabilities" aria-labelledby="capabilities-title">
-    <div class="landing-section-heading">
+    <div class="landing-section-heading" data-reveal>
         <p class="landing-section-eyebrow">Built around your day</p>
         <h2 id="capabilities-title">The essentials, working together.</h2>
         <p>Spend less time switching between tasks and more time keeping your business moving.</p>
     </div>
     <div class="landing-feature-grid">
-        <article class="landing-feature">
+        <article class="landing-feature" data-reveal>
             <span class="landing-feature-icon feature-stock" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
                     <path d="m3 7 9-4 9 4v10l-9 4-9-4V7Z"/>
@@ -135,7 +135,7 @@ use App\Core\View;
             <h3>Know your stock</h3>
             <p>Track quantities, review stock movements and spot items that need reordering.</p>
         </article>
-        <article class="landing-feature">
+        <article class="landing-feature" data-reveal>
             <span class="landing-feature-icon feature-checkout" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
                     <path d="M3 3h2l2.4 11.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 7H6"/>
@@ -146,7 +146,7 @@ use App\Core\View;
             <h3>Keep sales moving</h3>
             <p>Record transactions, payments and receipts from a streamlined point-of-sale workflow.</p>
         </article>
-        <article class="landing-feature">
+        <article class="landing-feature" data-reveal>
             <span class="landing-feature-icon feature-team" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
                     <circle cx="9" cy="8" r="4"/>
@@ -157,7 +157,7 @@ use App\Core\View;
             <h3>Support your team</h3>
             <p>Give staff the right tools with role-based access and clear approval workflows.</p>
         </article>
-        <article class="landing-feature">
+        <article class="landing-feature" data-reveal>
             <span class="landing-feature-icon feature-insights" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
                     <path d="M3 3v18h18"/>
@@ -170,7 +170,7 @@ use App\Core\View;
     </div>
 </section>
 
-<section class="landing-cta" aria-labelledby="landing-cta-title">
+<section class="landing-cta" aria-labelledby="landing-cta-title" data-reveal>
     <div>
         <p class="landing-section-eyebrow">Ready when you are</p>
         <h2 id="landing-cta-title">Bring your daily operations into focus.</h2>
