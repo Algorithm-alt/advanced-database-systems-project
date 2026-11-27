@@ -2080,10 +2080,18 @@ td.number, th.number {
     }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 480px) {
     .header-inner { gap: 4px; }
+    .header-left { gap: 5px; }
     .header-actions { gap: 4px; }
-    .brand-text strong { max-width: 68px; }
+    .brand { gap: 5px; }
+    .brand-text strong { max-width: 80px; }
+}
+
+@media (max-width: 380px) {
+    .header-left { gap: 4px; }
+    .brand-text { display: none; }
+    .quick-actions-panel { right: -44px; }
 }
 
 [data-tooltip] {
