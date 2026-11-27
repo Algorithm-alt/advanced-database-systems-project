@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (themeIcon)  themeIcon.innerHTML = theme === 'dark' ? sunIcon : moonIcon;
         if (themeLabel) themeLabel.textContent = theme === 'dark' ? 'Light' : 'Dark';
         if (themeToggle) {
-            themeToggle.setAttribute('data-tooltip', tip);
             themeToggle.setAttribute('title', tip);
             themeToggle.setAttribute('aria-label', tip);
         }

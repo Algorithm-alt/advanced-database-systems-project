@@ -83,7 +83,7 @@ if ($authUser !== null) {
                 </div>
             <?php endif; ?>
             <button type="button" class="btn btn-ghost btn-sm theme-toggle" data-theme-toggle
-                    data-tooltip="Switch to dark mode" title="Switch to dark mode" aria-label="Switch to dark mode">
+                    title="Switch to dark mode" aria-label="Switch to dark mode">
                 <span class="theme-icon" data-theme-icon aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
                         <path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/>
