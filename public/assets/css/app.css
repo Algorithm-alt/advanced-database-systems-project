@@ -571,6 +571,30 @@ code {
     overflow: hidden;
     pointer-events: none;
 }
+.auth-ambient::before,
+.auth-ambient::after {
+    position: absolute;
+    content: '';
+    z-index: 0;
+    pointer-events: none;
+}
+.auth-ambient::before {
+    inset: -24%;
+    background:
+        radial-gradient(ellipse at 20% 28%, rgba(20,184,166,.14), transparent 34%),
+        radial-gradient(ellipse at 78% 72%, rgba(59,130,246,.1), transparent 32%);
+    filter: blur(28px);
+    opacity: .78;
+    animation: login-aurora 30s ease-in-out infinite alternate;
+}
+.auth-ambient::after {
+    inset: -65% -50%;
+    background: linear-gradient(110deg, transparent 47%, rgba(255,255,255,.2) 49%, rgba(20,184,166,.05) 50%, transparent 53%);
+    opacity: .45;
+    transform: translate3d(-18%, 0, 0) rotate(-8deg);
+    animation: login-sweep 24s ease-in-out infinite;
+}
+.auth-ambient > * { z-index: 1; }
 .auth-orbit {
     position: absolute;
     display: block;
@@ -632,6 +656,16 @@ code {
 @keyframes login-drift {
     from { transform: translate3d(-12px, 8px, 0) scale(.96); }
     to { transform: translate3d(16px, -14px, 0) scale(1.04); }
+}
+@keyframes login-aurora {
+    0% { transform: translate3d(-2%, -1%, 0) scale(.96); }
+    50% { transform: translate3d(2%, 1%, 0) scale(1.02); }
+    100% { transform: translate3d(-1%, 2%, 0) scale(1.05); }
+}
+@keyframes login-sweep {
+    0%, 18% { opacity: 0; transform: translate3d(-18%, 0, 0) rotate(-8deg); }
+    45% { opacity: .55; }
+    82%, 100% { opacity: 0; transform: translate3d(18%, 0, 0) rotate(-8deg); }
 }
 @keyframes login-twinkle {
     0%, 100% { opacity: .58; transform: scale(.78); }
@@ -770,12 +804,22 @@ code {
 [data-theme="dark"] .auth-orbit-two { border-color: rgba(96,165,250,.14); }
 [data-theme="dark"] .auth-glow-one { background: radial-gradient(circle, rgba(20,184,166,.2), transparent 68%); }
 [data-theme="dark"] .auth-glow-two { background: radial-gradient(circle, rgba(59,130,246,.16), transparent 70%); }
+[data-theme="dark"] .auth-ambient::before {
+    background:
+        radial-gradient(ellipse at 20% 28%, rgba(45,212,191,.18), transparent 34%),
+        radial-gradient(ellipse at 78% 72%, rgba(96,165,250,.14), transparent 32%);
+}
+[data-theme="dark"] .auth-ambient::after {
+    background: linear-gradient(110deg, transparent 47%, rgba(45,212,191,.11) 49%, rgba(96,165,250,.045) 50%, transparent 53%);
+}
 
 @media (prefers-reduced-motion: reduce) {
     .auth-orbit,
     .auth-glow,
     .auth-orbit::before,
-    .auth-orbit::after {
+    .auth-orbit::after,
+    .auth-ambient::before,
+    .auth-ambient::after {
         animation: none;
     }
 }
