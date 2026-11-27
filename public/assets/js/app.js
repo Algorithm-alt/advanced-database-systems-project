@@ -155,10 +155,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (timerId) window.clearTimeout(timerId);
             dismiss();
         });
-        notice.addEventListener('mouseenter', function () {
-            if (timerId) window.clearTimeout(timerId);
-        });
-        notice.addEventListener('mouseleave', startTimer);
+        if (!notice.classList.contains('notice-success')) {
+            notice.addEventListener('mouseenter', function () {
+                if (timerId) window.clearTimeout(timerId);
+            });
+            notice.addEventListener('mouseleave', startTimer);
+        }
 
         startTimer();
     });
